@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<base target="_top">
+</head>
+
+<body>
+	<div id="message"></div>
+	<script>
+	var params = new URLSearchParams(window.location.search);
+	var message = params.get('message');
+	document.getElementById('message').textContent = message;
+	// Close the dialog automatically after 30 seconds
+	setTimeout(function() {
+		google.script.host.close();
+	}, 30000);
+	// Function to close the dialog manually
+	function closeDialog() {
+		if(window.shouldClose) { // Check the shouldClose variable
+			google.script.host.close();
+		}
+	}
+	</script>
+</body>
+
+</html>

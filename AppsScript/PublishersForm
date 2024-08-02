@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<base target="_top">
+</head>
+
+<body>
+	<form id="publishersForm">
+		<label for="Publisher">Publisher's Full Legal Name:</label><br>
+		<input type="text" id="Publisher" name="Publisher" required><br>
+		<label for="Description">Description of the Publisher:</label><br>
+		<textarea id="Description" name="Description" rows="4" cols="50"></textarea><br>
+		<button type="button" onclick="processForm(false)">Submit</button>
+		<button type="button" onclick="processForm(true)">Submit and Add Another</button>
+	</form>
+	<script>
+	function processForm(resetAfterSubmit) {
+		var form = document.getElementById('publishersForm');
+		if(!form.checkValidity()) {
+			alert('Please fill in the Publisher\'s Full Legal Name.');
+			return;
+		}
+		var formData = new FormData(form);
+		var formObject = {};
+		formData.forEach(function(value, key) {
+			formObject[key] = value;
+		});
+		google.script.run.withSuccessHandler(function() {
+			if(resetAfterSubmit) {
+				form.reset();
+			} else {
+				google.script.host.close();
+			}
+		}).processPublishersForm(formObject);
+	}
+	</script>
+</body>
+
+</html>

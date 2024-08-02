@@ -92,8 +92,8 @@
 		if(!dateString) return '';
 		var dateParts = dateString.split('-');
 		var year = dateParts[0];
-		var month = dateParts[1] || '01';
-		var day = dateParts[2] || '01';
+		var month = dateParts[1] || '1';
+		var day = dateParts[2] || '1';
 		return month + '/' + day + '/' + year;
 	}
 

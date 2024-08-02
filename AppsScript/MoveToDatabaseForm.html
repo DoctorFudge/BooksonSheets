@@ -1,90 +1,115 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-	<base target="_top">
+  <base target="_top">
 </head>
-
 <body>
-	<form id="moveToDatabaseForm">
-		<p>Please fill in the following details:</p>
-		<input type="hidden" id="matchedRow" name="matchedRow" value="<?= data.matchedRow ?>">
-		<input type="hidden" id="matchedSheet" name="matchedSheet" value="<?= data.matchedSheet ?>">
-		<label for="Title">Title:</label><br>
-		<input type="text" id="Title" name="Title" value="<?= data.Title ?>"><br>
-		<label for="Author">Author:</label><br>
-		<input type="text" id="Author" name="Author" value="<?= data.Author ?>"><br>
-		<label for="Author l-f">Author l-f:</label><br>
-		<input type="text" id="Author l-f" name="Author l-f" value="<?= data['Author l-f'] ?>"><br>
-		<label for="Series">Series:</label><br>
-		<input type="text" id="Series" name="Series" value="<?= data.Series ?>"><br>
-		<label for="No. in Series">No. in Series:</label><br>
-		<input type="text" id="No. in Series" name="No. in Series" value="<?= data['No. in Series'] ?>"><br>
-		<label for="Genre">Genre:</label><br>
-		<input type="text" id="Genre" name="Genre" value="<?= data.Genre ?>"><br>
-		<label for="Description">Short Description:</label><br>
-		<textarea id="Description" name="Description" rows="4" cols="50"><?= data.Description ?></textarea><br>
-		<label for="Tags">Tags:</label><br>
-		<input type="text" id="Tags" name="Tags" value="<?= data.Tags ?>"><br>
-		<label for="Original Publication Date">Original Publication Date:</label><br>
-		<input type="text" id="Original Publication Date" name="Original Publication Date" value="<?= data['Original Publication Date'] ?>"><br>
-		<label for="Publisher">Publisher:</label><br>
-		<input type="text" id="Publisher" name="Publisher" value="<?= data.Publisher ?>"><br>
-		<label for="Edition Publication Date">Edition Publication Date:</label><br>
-		<input type="text" id="Edition Publication Date" name="Edition Publication Date" value="<?= data['Edition Publication Date'] ?>"><br>
-		<label for="ISBN13">ISBN13:</label><br>
-		<input type="text" id="ISBN13" name="ISBN13" value="<?= data.ISBN13 ?>"><br>
-		<label for="ISBN">ISBN:</label><br>
-		<input type="text" id="ISBN" name="ISBN" value="<?= data.ISBN ?>"><br>
-		<label for="Binding">Binding:</label><br>
-		<select id="Binding" name="Binding">
-			<option value="HC" <?= data.Binding == 'HC' ? 'selected' : '' ?>>Hardcover</option>
-			<option value="HCDJ" <?= data.Binding == 'HCDJ' ? 'selected' : '' ?>>Hardcover w/ Dust Jacket</option>
-			<option value="PB" <?= data.Binding == 'PB' ? 'selected' : '' ?>>Paperback</option>
-			<option value="S" <?= data.Binding == 'S' ? 'selected' : '' ?>>Special</option>
-		</select><br>
-		<label for="Thickness">Thickness:</label><br>
-		<input type="text" id="Thickness" name="Thickness" value="<?= data.Thickness ?>"><br>
-		<label for="Height">Height:</label><br>
-		<input type="text" id="Height" name="Height" value="<?= data.Height ?>"><br>
-		<label for="Width">Width:</label><br>
-		<input type="text" id="Width" name="Width" value="<?= data.Width ?>"><br>
-		<label for="Page Count">Page Count:</label><br>
-		<input type="text" id="Page Count" name="Page Count" value="<?= data['Page Count'] ?>"><br>
-		<label for="Nonfiction">Is the book nonfiction?</label><br>
-		<select id="Nonfiction" name="Nonfiction">
-			<option value="0" <?= data.Nonfiction == '0' ? 'selected' : '' ?>>No</option>
-			<option value="1" <?= data.Nonfiction == '1' ? 'selected' : '' ?>>Yes</option>
-		</select><br>
-		<label for="Favorite">Is the book a favorite of yours?</label><br>
-		<select id="Favorite" name="Favorite">
-			<option value="0" <?= data.Favorite == '0' ? 'selected' : '' ?>>No</option>
-			<option value="1" <?= data.Favorite == '1' ? 'selected' : '' ?>>Yes</option>
-		</select><br>
-		<label for="Comic">Is the book a comic?</label><br>
-		<select id="Comic" name="Comic">
-			<option value="0" <?= data.Comic == '0' ? 'selected' : '' ?>>No</option>
-			<option value="1" <?= data.Comic == '1' ? 'selected' : '' ?>>Yes</option>
-		</select><br>
-		<label for="HTML">What is the HTML color code of the book's spine?</label><br>
-		<input type="text" id="HTML" name="HTML" value="<?= data.HTML ?>"><br>
-		<label for="Cover">Cover URL:</label><br>
-		<input type="text" id="Cover" name="Cover" value="<?= data.Cover ?>"><br>
-		<button type="button" onclick="processForm()">Submit</button>
-	</form>
-	<script>
-	function processForm() {
-		var form = document.getElementById('moveToDatabaseForm');
-		var formData = new FormData(form);
-		var formObject = {};
-		for(var pair of formData.entries()) {
-			formObject[pair[0]] = pair[1];
-		}
-		google.script.run.withSuccessHandler(function() {
-			google.script.host.close();
-		}).processMoveToDatabaseForm(formObject);
-	}
-	</script>
+  <form id="moveToDatabaseForm">
+    <p>Please fill in the following details:</p>
+    <label for="Title">Title:</label><br>
+    <input type="text" id="Title" name="Title" value="<?= data.Title ?>"><br>
+    <label for="Author">Author:</label><br>
+    <input type="text" id="Author" name="Author" value="<?= data.Author ?>"><br>
+    <label for="Author l-f">Author l-f:</label><br>
+    <input type="text" id="Author l-f" name="Author l-f" value="<?= data['Author l-f'] ?>"><br>
+    <label for="Series">Series:</label><br>
+    <input type="text" id="Series" name="Series" value="<?= data.Series ?>"><br>
+    <label for="No. in Series">No. in Series:</label><br>
+    <input type="text" id="No. in Series" name="No. in Series" value="<?= data['No. in Series'] ?>"><br>
+    <label for="Genre">Genre:</label><br>
+    <input type="text" id="Genre" name="Genre" value="<?= data.Genre ?>"><br>
+    <label for="Description">Short Description:</label><br>
+    <textarea id="Description" name="Description" rows="4" cols="50"><?= data.Description ?></textarea><br>
+    <label for="Tags">Tags:</label><br>
+    <input type="text" id="Tags" name="Tags" value="<?= data.Tags ?>"><br>
+    <label for="Original Publication Date">Original Publication Date:</label><br>
+    <input type="text" id="Original Publication Date" name="Original Publication Date" value="<?= data['Original Publication Date'] ?>"><br>
+    <label for="Publisher">Publisher:</label><br>
+    <input type="text" id="Publisher" name="Publisher" value="<?= data.Publisher ?>"><br>
+    <label for="Edition Publication Date">Edition Publication Date:</label><br>
+    <input type="text" id="Edition Publication Date" name="Edition Publication Date" value="<?= data['Edition Publication Date'] ?>"><br>
+    <label for="ISBN13">ISBN13:</label><br>
+    <input type="text" id="ISBN13" name="ISBN13" value="<?= data.ISBN13 ?>"><br>
+    <label for="ISBN">ISBN:</label><br>
+    <input type="text" id="ISBN" name="ISBN" value="<?= data.ISBN ?>"><br>
+    <label for="Binding">Binding:</label><br>
+    <select id="Binding" name="Binding">
+      <option value="HC" <?= data.Binding == 'HC' ? 'selected' : '' ?>>Hardcover</option>
+      <option value="HCDJ" <?= data.Binding == 'HCDJ' ? 'selected' : '' ?>>Hardcover w/ Dust Jacket</option>
+      <option value="PB" <?= data.Binding == 'PB' ? 'selected' : '' ?>>Paperback</option>
+      <option value="S" <?= data.Binding == 'S' ? 'selected' : '' ?>>Special</option>
+    </select><br>
+    <label for="Thickness">Thickness:</label><br>
+    <input type="text" id="Thickness" name="Thickness" value="<?= data.Thickness ?>"><br>
+    <select id="ThicknessInputUnit" name="ThicknessInputUnit">
+      <option value="mm">mm</option>
+      <option value="cm">cm</option>
+      <option value="in">inches</option>
+    </select>
+    <select id="ThicknessOutputUnit" name="ThicknessOutputUnit">
+      <option value="in">inches</option>
+      <option value="cm">cm</option>
+      <option value="mm">mm</option>
+    </select><br>
+    <label for="Height">Height:</label><br>
+    <input type="text" id="Height" name="Height" value="<?= data.Height ?>"><br>
+    <select id="HeightInputUnit" name="HeightInputUnit">
+      <option value="in">inches</option>
+      <option value="cm">cm</option>
+      <option value="mm">mm</option>
+    </select>
+    <select id="HeightOutputUnit" name="HeightOutputUnit">
+      <option value="in">inches</option>
+      <option value="cm">cm</option>
+      <option value="mm">mm</option>
+    </select><br>
+    <label for="Width">Width:</label><br>
+    <input type="text" id="Width" name="Width" value="<?= data.Width ?>"><br>
+    <select id="WidthInputUnit" name="WidthInputUnit">
+      <option value="in">inches</option>
+      <option value="cm">cm</option>
+      <option value="mm">mm</option>
+    </select>
+    <select id="WidthOutputUnit" name="WidthOutputUnit">
+      <option value="in">inches</option>
+      <option value="cm">cm</option>
+      <option value="mm">mm</option>
+    </select><br>
+    <label for="Page Count">Page Count:</label><br>
+    <input type="text" id="Page Count" name="Page Count" value="<?= data['Page Count'] ?>"><br>
+    <label for="Nonfiction">Is the book nonfiction?</label><br>
+    <select id="Nonfiction" name="Nonfiction">
+      <option value="0" <?= data.Nonfiction == '0' ? 'selected' : '' ?>>No</option>
+      <option value="1" <?= data.Nonfiction == '1' ? 'selected' : '' ?>>Yes</option>
+    </select><br>
+    <label for="Favorite">Is the book a favorite of yours?</label><br>
+    <select id="Favorite" name="Favorite">
+      <option value="0" <?= data.Favorite == '0' ? 'selected' : '' ?>>No</option>
+      <option value="1" <?= data.Favorite == '1' ? 'selected' : '' ?>>Yes</option>
+    </select><br>
+    <label for="Comic">Is the book a comic?</label><br>
+    <select id="Comic" name="Comic">
+      <option value="0" <?= data.Comic == '0' ? 'selected' : '' ?>>No</option>
+      <option value="1" <?= data.Comic == '1' ? 'selected' : '' ?>>Yes</option>
+    </select><br>
+    <label for="HTML">What is the HTML color code of the book's spine?</label><br>
+    <input type="text" id="HTML" name="HTML" value="<?= data.HTML ?>"><br>
+    <label for="Cover">Cover URL:</label><br>
+    <input type="text" id="Cover" name="Cover" value="<?= data.Cover ?>"><br>
+    <button type="button" onclick="processForm()">Submit</button>
+  </form>
+  <script>
+    function processForm() {
+      var form = document.getElementById('moveToDatabaseForm');
+      var formData = new FormData(form);
+      var formObject = {};
+      for (var pair of formData.entries()) {
+        formObject[pair[0]] = pair[1];
+      }
+      google.script.run.withSuccessHandler(function() {
+        google.script.host.close();
+      }).processMoveToDatabaseForm(formObject);
+    }
+  </script>
 </body>
-
 </html>

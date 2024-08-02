@@ -1,6 +1,12 @@
 function takeItToTheCleaners() {
 	var ui = SpreadsheetApp.getUi();
-	var html = HtmlService.createHtmlOutputFromFile('MessageDialog').append('<script>setTimeout(function() { google.script.host.close(); }, 30000);</script>').append('<script>function closeDialog() { google.script.host.close(); }</script>').setTitle('Executing').setWidth(250).setHeight(1).setSandboxMode(HtmlService.SandboxMode.IFRAME);
+	var html = HtmlService.createHtmlOutputFromFile('MessageDialog')
+		.append('<script>setTimeout(function() { google.script.host.close(); }, 30000);</script>')
+		.append('<script>function closeDialog() { google.script.host.close(); }</script>')
+		.setTitle('Executing')
+		.setWidth(250)
+		.setHeight(1)
+		.setSandboxMode(HtmlService.SandboxMode.IFRAME);
 	var dialog = ui.showModalDialog(html, 'Cleaning the Sheet');
 	const shelvesMap = getShelvesMap();
 	clearEmptyRowsShelves(shelvesMap);
@@ -15,17 +21,28 @@ function takeItToTheCleaners() {
 	cleanupWantSheet();
 	Utilities.sleep(10);
 	caseDivider();
-	var closingHtml = HtmlService.createHtmlOutput('<script>setTimeout(function() { google.script.host.close(); }, 1);</script>').setWidth(1).setHeight(1).setSandboxMode(HtmlService.SandboxMode.IFRAME);
+	var closingHtml = HtmlService.createHtmlOutput('<script>setTimeout(function() { google.script.host.close(); }, 1);</script>')
+		.setWidth(1)
+		.setHeight(1)
+		.setSandboxMode(HtmlService.SandboxMode.IFRAME);
 	ui.showModalDialog(closingHtml, 'Finished!');
 }
 
 function cleanupDatabaseSheet() {
-	var html = HtmlService.createHtmlOutputFromFile('MessageDialog').append('<script>setTimeout(function() { google.script.host.close(); }, 30000);</script>').append('<script>function closeDialog() { google.script.host.close(); }</script>').setTitle('Executing').setWidth(250).setHeight(1).setSandboxMode(HtmlService.SandboxMode.IFRAME);
+	var html = HtmlService.createHtmlOutputFromFile('MessageDialog')
+		.append('<script>setTimeout(function() { google.script.host.close(); }, 30000);</script>')
+		.append('<script>function closeDialog() { google.script.host.close(); }</script>')
+		.setTitle('Executing')
+		.setWidth(250)
+		.setHeight(1)
+		.setSandboxMode(HtmlService.SandboxMode.IFRAME);
 	var ui = SpreadsheetApp.getUi();
 	var dialog = ui.showModalDialog(html, 'Tidying the Database');
 	var ss = SpreadsheetApp.getActiveSpreadsheet();
 	var sheet = ss.getSheetByName('Database');
 	var dbMap = getDatabaseMap();
+	var lastRow = sheet.getLastRow();
+	if (lastRow <= 1) return;
 	var dataRange = sheet.getDataRange();
 	var data = dataRange.getValues();
 	for (var i = 1; i < data.length; i++) {
@@ -39,7 +56,8 @@ function cleanupDatabaseSheet() {
 		}
 		['Title', 'Author', 'Author l-f', 'Publisher'].forEach(function(field) {
 			if (typeof row[dbMap[field]] !== 'string') {
-				sheet.getRange(i + 1, dbMap[field] + 1).setNumberFormat('@');
+				sheet.getRange(i + 1, dbMap[field] + 1)
+					.setNumberFormat('@');
 			}
 		});
 		if (row[dbMap['Series']] !== "—" && row[dbMap['Series']].trim() === "") {
@@ -48,19 +66,22 @@ function cleanupDatabaseSheet() {
 		if (!/^(\d+|—|∞)$/.test(row[dbMap['No. in Series']])) {
 			row[dbMap['No. in Series']] = '';
 		}
-		sheet.getRange(i + 1, dbMap['No. in Series'] + 1).setHorizontalAlignment('right');
+		sheet.getRange(i + 1, dbMap['No. in Series'] + 1)
+			.setHorizontalAlignment('right');
 		var validGenres = ['Literary Fiction', 'Historical Fiction', 'Adventure', 'Western', 'Fantasy', 'Science Fiction', 'Horror', 'Thriller', 'Mystery', 'Crime', 'Romance', 'Humor', 'Poetry', 'History', 'Biography/Autobiography', 'Science/Nature', 'Self-Help', 'Other'];
 		if (!validGenres.includes(row[dbMap['Genre']])) {
 			row[dbMap['Genre']] = '';
 		}
 		['Original Publication Date', 'Edition Publication Date', 'Acquisition Date'].forEach(function(field) {
 			var date = parseDate(row[dbMap[field]]);
-			if (date.getTime() !== new Date(0).getTime()) {
+			if (date.getTime() !== new Date(0)
+				.getTime()) {
 				row[dbMap[field]] = Utilities.formatDate(date, Session.getScriptTimeZone(), 'M/d/yyyy');
 			} else {
 				row[dbMap[field]] = '';
 			}
-			sheet.getRange(i + 1, dbMap[field] + 1).setHorizontalAlignment('right');
+			sheet.getRange(i + 1, dbMap[field] + 1)
+				.setHorizontalAlignment('right');
 		});
 		['ISBN13', 'ISBN'].forEach(function(field) {
 			var isbn = row[dbMap[field]].toString();
@@ -111,18 +132,38 @@ function cleanupDatabaseSheet() {
 		if (!/^https?:\/\/.*$/.test(row[dbMap['Cover']])) {
 			row[dbMap['Cover']] = '';
 		}
+		['Other Genres', 'Tags'].forEach(function(field) {
+			if (row[dbMap[field]]) {
+				row[dbMap[field]] = String(row[dbMap[field]])
+					.split(',')
+					.map(function(item) {
+						return item.trim();
+					})
+					.join(', ');
+				sheet.getRange(i + 1, dbMap[field] + 1)
+					.setNumberFormat('@');
+			}
+		});
 		data[i] = row;
 	}
 	dataRange.setValues(data);
 }
 
 function cleanupOTWSheet() {
-	var html = HtmlService.createHtmlOutputFromFile('MessageDialog').append('<script>setTimeout(function() { google.script.host.close(); }, 30000);</script>').append('<script>function closeDialog() { google.script.host.close(); }</script>').setTitle('Executing').setWidth(250).setHeight(1).setSandboxMode(HtmlService.SandboxMode.IFRAME);
+	var html = HtmlService.createHtmlOutputFromFile('MessageDialog')
+		.append('<script>setTimeout(function() { google.script.host.close(); }, 30000);</script>')
+		.append('<script>function closeDialog() { google.script.host.close(); }</script>')
+		.setTitle('Executing')
+		.setWidth(250)
+		.setHeight(1)
+		.setSandboxMode(HtmlService.SandboxMode.IFRAME);
 	var ui = SpreadsheetApp.getUi();
 	var dialog = ui.showModalDialog(html, 'Tidying the OntheWay Sheet');
 	var ss = SpreadsheetApp.getActiveSpreadsheet();
 	var sheet = ss.getSheetByName('OntheWay');
 	var OTWMap = getOTWMap();
+	var lastRow = sheet.getLastRow();
+	if (lastRow <= 1) return;
 	var dataRange = sheet.getDataRange();
 	var data = dataRange.getValues();
 	for (var i = 1; i < data.length; i++) {
@@ -132,7 +173,8 @@ function cleanupOTWSheet() {
 		});
 		['Title', 'Author', 'Author l-f', 'Publisher'].forEach(function(field) {
 			if (typeof row[OTWMap[field]] !== 'string') {
-				sheet.getRange(i + 1, OTWMap[field] + 1).setNumberFormat('@');
+				sheet.getRange(i + 1, OTWMap[field] + 1)
+					.setNumberFormat('@');
 			}
 		});
 		if (row[OTWMap['Series']] !== "—" && row[OTWMap['Series']].trim() === "") {
@@ -141,19 +183,22 @@ function cleanupOTWSheet() {
 		if (!/^(\d+|—|∞)$/.test(row[OTWMap['No. in Series']])) {
 			row[OTWMap['No. in Series']] = '';
 		}
-		sheet.getRange(i + 1, OTWMap['No. in Series'] + 1).setHorizontalAlignment('right');
+		sheet.getRange(i + 1, OTWMap['No. in Series'] + 1)
+			.setHorizontalAlignment('right');
 		var validGenres = ['Literary Fiction', 'Historical Fiction', 'Adventure', 'Western', 'Fantasy', 'Science Fiction', 'Horror', 'Thriller', 'Mystery', 'Crime', 'Romance', 'Humor', 'Poetry', 'History', 'Biography/Autobiography', 'Science/Nature', 'Self-Help', 'Other'];
 		if (!validGenres.includes(row[OTWMap['Genre']])) {
 			row[OTWMap['Genre']] = '';
 		}
 		['Original Publication Date', 'Edition Publication Date'].forEach(function(field) {
 			var date = parseDate(row[OTWMap[field]]);
-			if (date.getTime() !== new Date(0).getTime()) {
+			if (date.getTime() !== new Date(0)
+				.getTime()) {
 				row[OTWMap[field]] = Utilities.formatDate(date, Session.getScriptTimeZone(), 'M/d/yyyy');
 			} else {
 				row[OTWMap[field]] = '';
 			}
-			sheet.getRange(i + 1, OTWMap[field] + 1).setHorizontalAlignment('right');
+			sheet.getRange(i + 1, OTWMap[field] + 1)
+				.setHorizontalAlignment('right');
 		});
 		['ISBN13', 'ISBN'].forEach(function(field) {
 			var isbn = row[OTWMap[field]].toString();
@@ -178,7 +223,13 @@ function cleanupOTWSheet() {
 }
 
 function cleanupWantSheet() {
-	var html = HtmlService.createHtmlOutputFromFile('MessageDialog').append('<script>setTimeout(function() { google.script.host.close(); }, 30000);</script>').append('<script>function closeDialog() { google.script.host.close(); }</script>').setTitle('Executing').setWidth(250).setHeight(1).setSandboxMode(HtmlService.SandboxMode.IFRAME);
+	var html = HtmlService.createHtmlOutputFromFile('MessageDialog')
+		.append('<script>setTimeout(function() { google.script.host.close(); }, 30000);</script>')
+		.append('<script>function closeDialog() { google.script.host.close(); }</script>')
+		.setTitle('Executing')
+		.setWidth(250)
+		.setHeight(1)
+		.setSandboxMode(HtmlService.SandboxMode.IFRAME);
 	var ui = SpreadsheetApp.getUi();
 	var dialog = ui.showModalDialog(html, 'Tidying the Want Sheet');
 	var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -193,7 +244,8 @@ function cleanupWantSheet() {
 		});
 		['Title', 'Author', 'Author l-f'].forEach(function(field) {
 			if (typeof row[wantMap[field]] !== 'string') {
-				sheet.getRange(i + 2, wantMap[field] + 1).setNumberFormat('@');
+				sheet.getRange(i + 2, wantMap[field] + 1)
+					.setNumberFormat('@');
 			}
 		});
 		if (row[wantMap['Series']] !== "—" && row[wantMap['Series']].trim() === "") {
@@ -202,19 +254,22 @@ function cleanupWantSheet() {
 		if (!/^(\d+|—|∞)$/.test(row[wantMap['No. in Series']])) {
 			row[wantMap['No. in Series']] = '';
 		}
-		sheet.getRange(i + 2, wantMap['No. in Series'] + 1).setHorizontalAlignment('right');
+		sheet.getRange(i + 2, wantMap['No. in Series'] + 1)
+			.setHorizontalAlignment('right');
 		var validGenres = ['Literary Fiction', 'Historical Fiction', 'Adventure', 'Western', 'Fantasy', 'Science Fiction', 'Horror', 'Thriller', 'Mystery', 'Crime', 'Romance', 'Humor', 'Poetry', 'History', 'Biography/Autobiography', 'Science/Nature', 'Self-Help', 'Other'];
 		if (!validGenres.includes(row[wantMap['Genre']])) {
 			row[wantMap['Genre']] = '';
 		}
 		['Original Publication Date'].forEach(function(field) {
 			var date = parseDate(row[wantMap[field]]);
-			if (date.getTime() !== new Date(0).getTime()) {
+			if (date.getTime() !== new Date(0)
+				.getTime()) {
 				row[wantMap[field]] = Utilities.formatDate(date, Session.getScriptTimeZone(), 'M/d/yyyy');
 			} else {
 				row[wantMap[field]] = '';
 			}
-			sheet.getRange(i + 1, wantMap[field] + 1).setHorizontalAlignment('right');
+			sheet.getRange(i + 1, wantMap[field] + 1)
+				.setHorizontalAlignment('right');
 		});
 		['Favorite', 'Nonfiction', 'Comic'].forEach(function(field) {
 			var value = row[wantMap[field]];
@@ -229,75 +284,110 @@ function cleanupWantSheet() {
 }
 
 function clearEmptyRowsShelves(shelvesMap) {
-	var html = HtmlService.createHtmlOutputFromFile('MessageDialog').append('<script>setTimeout(function() { google.script.host.close(); }, 30000);</script>').append('<script>function closeDialog() { google.script.host.close(); }</script>').setTitle('Executing').setWidth(250).setHeight(1).setSandboxMode(HtmlService.SandboxMode.IFRAME);
+	var html = HtmlService.createHtmlOutputFromFile('MessageDialog')
+		.append('<script>setTimeout(function() { google.script.host.close(); }, 30000);</script>')
+		.append('<script>function closeDialog() { google.script.host.close(); }</script>')
+		.setTitle('Executing')
+		.setWidth(250)
+		.setHeight(1)
+		.setSandboxMode(HtmlService.SandboxMode.IFRAME);
 	var ui = SpreadsheetApp.getUi();
 	var dialog = ui.showModalDialog(html, 'Clearing Empty Shelves Rows');
 	var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
 	var sheet = spreadsheet.getSheetByName('Shelves');
 	var lastRow = sheet.getLastRow();
 	var lastColumn = sheet.getLastColumn();
+	if (lastRow <= 1) return;
 	var titleColumnIndex = shelvesMap["Title"] + 1;
 	var dataRange = sheet.getRange(2, titleColumnIndex, lastRow - 1, 1);
 	var data = dataRange.getValues();
 	for (var i = 0; i < data.length; i++) {
 		if (data[i][0] === '') {
 			var rowToResetColor = i + 2;
-			sheet.getRange(rowToResetColor, 1, 1, lastColumn).setBackground(null);
+			sheet.getRange(rowToResetColor, 1, 1, lastColumn)
+				.setBackground(null);
 		}
 	}
 }
 
 function clearEmptyRowsDatabase(databaseMap) {
-	var html = HtmlService.createHtmlOutputFromFile('MessageDialog').append('<script>setTimeout(function() { google.script.host.close(); }, 30000);</script>').append('<script>function closeDialog() { google.script.host.close(); }</script>').setTitle('Executing').setWidth(250).setHeight(1).setSandboxMode(HtmlService.SandboxMode.IFRAME);
+	var html = HtmlService.createHtmlOutputFromFile('MessageDialog')
+		.append('<script>setTimeout(function() { google.script.host.close(); }, 30000);</script>')
+		.append('<script>function closeDialog() { google.script.host.close(); }</script>')
+		.setTitle('Executing')
+		.setWidth(250)
+		.setHeight(1)
+		.setSandboxMode(HtmlService.SandboxMode.IFRAME);
 	var ui = SpreadsheetApp.getUi();
 	var dialog = ui.showModalDialog(html, 'Clearing Empty Database Rows');
 	var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
 	var sheet = spreadsheet.getSheetByName('Database');
 	var lastRow = sheet.getLastRow();
 	var lastColumn = sheet.getLastColumn();
+	if (lastRow <= 1) return;
 	var titleColumnIndex = databaseMap["Title"] + 1;
 	var dataRange = sheet.getRange(2, titleColumnIndex, lastRow - 1, 1);
 	var data = dataRange.getValues();
 	for (var i = 0; i < data.length; i++) {
 		if (data[i][0] === '') {
 			var rowToClear = i + 2;
-			sheet.getRange(rowToClear, 1, 1, lastColumn).clearContent().setBackground(null);
+			sheet.getRange(rowToClear, 1, 1, lastColumn)
+				.clearContent()
+				.setBackground(null);
 		}
 	}
 }
 
 function clearEmptyRowsOntheWay(OTWMap) {
 	var ui = SpreadsheetApp.getUi();
-	var dialog = ui.showModalDialog(HtmlService.createHtmlOutputFromFile('MessageDialog').append('<script>setTimeout(function() { google.script.host.close(); }, 30000);</script>').append('<script>function closeDialog() { google.script.host.close(); }</script>').setTitle('Executing').setWidth(250).setHeight(1).setSandboxMode(HtmlService.SandboxMode.IFRAME), 'Clearing Empty OntheWay Rows');
+	var dialog = ui.showModalDialog(HtmlService.createHtmlOutputFromFile('MessageDialog')
+		.append('<script>setTimeout(function() { google.script.host.close(); }, 30000);</script>')
+		.append('<script>function closeDialog() { google.script.host.close(); }</script>')
+		.setTitle('Executing')
+		.setWidth(250)
+		.setHeight(1)
+		.setSandboxMode(HtmlService.SandboxMode.IFRAME), 'Clearing Empty OntheWay Rows');
 	var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
 	var sheet = spreadsheet.getSheetByName('OntheWay');
 	var lastRow = sheet.getLastRow();
 	var lastColumn = sheet.getLastColumn();
+	if (lastRow <= 1) return;
 	var titleColumnIndex = OTWMap["Title"] + 1;
 	var dataRange = sheet.getRange(2, 1, lastRow - 1, lastColumn);
 	var data = dataRange.getValues();
 	for (var i = 0; i < data.length; i++) {
 		if (data[i][titleColumnIndex - 1] === '') {
 			var rowToClear = i + 2;
-			sheet.getRange(rowToClear, 1, 1, lastColumn).clearContent().clearNote();
+			sheet.getRange(rowToClear, 1, 1, lastColumn)
+				.clearContent()
+				.clearNote();
 		}
 	}
 }
 
 function clearEmptyRowsWant(wantMap) {
 	var ui = SpreadsheetApp.getUi();
-	var dialog = ui.showModalDialog(HtmlService.createHtmlOutputFromFile('MessageDialog').append('<script>setTimeout(function() { google.script.host.close(); }, 30000);</script>').append('<script>function closeDialog() { google.script.host.close(); }</script>').setTitle('Executing').setWidth(250).setHeight(1).setSandboxMode(HtmlService.SandboxMode.IFRAME), 'Clearing Empty Want Rows');
+	var dialog = ui.showModalDialog(HtmlService.createHtmlOutputFromFile('MessageDialog')
+		.append('<script>setTimeout(function() { google.script.host.close(); }, 30000);</script>')
+		.append('<script>function closeDialog() { google.script.host.close(); }</script>')
+		.setTitle('Executing')
+		.setWidth(250)
+		.setHeight(1)
+		.setSandboxMode(HtmlService.SandboxMode.IFRAME), 'Clearing Empty Want Rows');
 	var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
 	var sheet = spreadsheet.getSheetByName('Want');
 	var lastRow = sheet.getLastRow();
 	var lastColumn = sheet.getLastColumn();
+	if (lastRow <= 1) return;
 	var titleColumnIndex = wantMap["Title"] + 1;
 	var dataRange = sheet.getRange(2, 1, lastRow - 1, lastColumn);
 	var data = dataRange.getValues();
 	for (var i = 0; i < data.length; i++) {
 		if (data[i][titleColumnIndex - 1] === '') {
 			var rowToClear = i + 2;
-			sheet.getRange(rowToClear, 1, 1, lastColumn).clearContent().clearNote();
+			sheet.getRange(rowToClear, 1, 1, lastColumn)
+				.clearContent()
+				.clearNote();
 		}
 	}
 }
@@ -308,12 +398,16 @@ function cleanAcquisitionDates() {
 	const databaseMap = getDatabaseMap();
 	const dateColumnIndex = databaseMap['Acquisition Date'] + 1;
 	const lastRow = databaseSheet.getLastRow();
-	const acquisitionDates = databaseSheet.getRange(2, dateColumnIndex, lastRow - 1).getValues();
+	if (lastRow <= 1) return;
+	const acquisitionDates = databaseSheet.getRange(2, dateColumnIndex, lastRow - 1)
+		.getValues();
 	const cleanedDates = acquisitionDates.map(dateArray => {
 		const date = dateArray[0];
 		return [new Date(date.getFullYear(), date.getMonth(), date.getDate())];
 	});
-	databaseSheet.getRange(2, dateColumnIndex, lastRow - 1).setValues(cleanedDates).setNumberFormat("MM/dd/yyyy");
+	databaseSheet.getRange(2, dateColumnIndex, lastRow - 1)
+		.setValues(cleanedDates)
+		.setNumberFormat("MM/dd/yyyy");
 }
 
 function cleanReadStartDates() {
@@ -322,12 +416,16 @@ function cleanReadStartDates() {
 	const readingLogMap = getReadingLogMap();
 	const dateColumnIndex = readingLogMap['Start Date'] + 1;
 	const lastRow = readingLogSheet.getLastRow();
-	const acquisitionDates = readingLogSheet.getRange(2, dateColumnIndex, lastRow - 1).getValues();
+	if (lastRow <= 1) return;
+	const acquisitionDates = readingLogSheet.getRange(2, dateColumnIndex, lastRow - 1)
+		.getValues();
 	const cleanedDates = acquisitionDates.map(dateArray => {
 		const date = dateArray[0];
 		return [new Date(date.getFullYear(), date.getMonth(), date.getDate())];
 	});
-	readingLogSheet.getRange(2, dateColumnIndex, lastRow - 1).setValues(cleanedDates).setNumberFormat("MM/dd/yyyy");
+	readingLogSheet.getRange(2, dateColumnIndex, lastRow - 1)
+		.setValues(cleanedDates)
+		.setNumberFormat("MM/dd/yyyy");
 }
 
 function cleanReadEndDates() {
@@ -336,12 +434,16 @@ function cleanReadEndDates() {
 	const readingLogMap = getReadingLogMap();
 	const dateColumnIndex = readingLogMap['End Date'] + 1;
 	const lastRow = readingLogSheet.getLastRow();
-	const acquisitionDates = readingLogSheet.getRange(2, dateColumnIndex, lastRow - 1).getValues();
+	if (lastRow <= 1) return;
+	const acquisitionDates = readingLogSheet.getRange(2, dateColumnIndex, lastRow - 1)
+		.getValues();
 	const cleanedDates = acquisitionDates.map(dateArray => {
 		const date = dateArray[0];
 		return [new Date(date.getFullYear(), date.getMonth(), date.getDate())];
 	});
-	readingLogSheet.getRange(2, dateColumnIndex, lastRow - 1).setValues(cleanedDates).setNumberFormat("MM/dd/yyyy");
+	readingLogSheet.getRange(2, dateColumnIndex, lastRow - 1)
+		.setValues(cleanedDates)
+		.setNumberFormat("MM/dd/yyyy");
 }
 
 function listCellsWithoutNotes() {

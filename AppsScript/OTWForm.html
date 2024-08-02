@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<base target="_top">
+</head>
+
+<body>
+	<form id="otwForm">
+		<button type="button" onclick="goBack()">Back</button>
+		<p>Please fill in the following details:</p>
+		<label for="Title">Title:</label><br>
+		<input type="text" id="Title" name="Title"><br>
+		<label for="Author">Author:</label><br>
+		<input type="text" id="Author" name="Author"><br>
+		<label for="Author l-f">Author l-f:</label><br>
+		<input type="text" id="Author l-f" name="Author l-f"><br>
+		<label for="Series">Series:</label><br>
+		<input type="text" id="Series" name="Series"><br>
+		<label for="No. in Series">No. in Series:</label><br>
+		<input type="text" id="No. in Series" name="No. in Series"><br>
+		<label for="Genre">Genre:</label><br>
+		<input type="text" id="Genre" name="Genre"><br>
+		<label for="Description">Short Description:</label><br>
+		<textarea id="Description" name="Description" rows="4" cols="50"></textarea><br>
+		<label for="Original Publication Date">Original Publication Date:</label><br>
+		<input type="text" id="Original Publication Date" name="Original Publication Date"><br>
+		<label for="Publisher">Publisher:</label><br>
+		<input type="text" id="Publisher" name="Publisher"><br>
+		<label for="Edition Publication Date">Edition Publication Date:</label><br>
+		<input type="text" id="Edition Publication Date" name="Edition Publication Date"><br>
+		<label for="ISBN13">ISBN13:</label><br>
+		<input type="text" id="ISBN13" name="ISBN13"><br>
+		<button type="button" onclick="fetchBookDataByISBN13()">Fetch Book Data by ISBN13</button><br>
+		<label for="ISBN">ISBN:</label><br>
+		<input type="text" id="ISBN" name="ISBN"><br>
+		<button type="button" onclick="fetchBookDataByISBN()">Fetch Book Data by ISBN</button><br>
+		<label for="Nonfiction">Is the book nonfiction?</label><br>
+		<select id="Nonfiction" name="Nonfiction">
+			<option value="0">No</option>
+			<option value="1">Yes</option>
+		</select><br>
+		<label for="Favorite">Is the book a favorite of yours?</label><br>
+		<select id="Favorite" name="Favorite">
+			<option value="0">No</option>
+			<option value="1">Yes</option>
+		</select><br>
+		<label for="Comic">Is the book a comic?</label><br>
+		<select id="Comic" name="Comic">
+			<option value="0">No</option>
+			<option value="1">Yes</option>
+		</select><br>
+		<label for="Cover">Cover URL:</label><br>
+		<input type="text" id="Cover" name="Cover"><br>
+		<button type="button" onclick="processForm(false)">Submit</button> <button type="button" onclick="processForm(true)">Submit and Add Another</button>
+	</form>
+	<script>
+	function fetchBookDataByISBN() {
+		fetchBookData('ISBN');
+	}
+
+	function fetchBookDataByISBN13() {
+		fetchBookData('ISBN13');
+	}
+
+	function fetchBookData(isbnType) {
+		var isbn = document.getElementById(isbnType).value;
+		if(isbn) {
+			var apiUrl = 'https://www.googleapis.com/books/v1/volumes?q=isbn:' + isbn;
+			fetch(apiUrl).then(response => response.json()).then(data => {
+				if(data.totalItems > 0) {
+					var book = data.items[0].volumeInfo;
+					document.getElementById('Title').value = book.title || '';
+					document.getElementById('Author').value = book.authors ? book.authors.join(', ') : '';
+					document.getElementById('Publisher').value = book.publisher || '';
+					document.getElementById('Page Count').value = book.pageCount || '';
+					document.getElementById('Cover').value = book.imageLinks ? book.imageLinks.thumbnail : '';
+					document.getElementById('Edition Publication Date').value = formatDate(book.publishedDate);
+				} else {
+					alert('No book found with the given ISBN.');
+				}
+			}).catch(error => {
+				console.error('Error fetching book data:', error);
+				alert('Failed to fetch book data. Please check the ISBN and try again.');
+			});
+		} else {
+			alert('Please enter an ' + isbnType + ' to fetch book data.');
+		}
+	}
+
+	function formatDate(dateString) {
+		if(!dateString) return '';
+		var dateParts = dateString.split('-');
+		var year = dateParts[0];
+		var month = dateParts[1] || '01';
+		var day = dateParts[2] || '01';
+		return month + '/' + day + '/' + year;
+	}
+
+	function processForm(resetAfterSubmit) {
+		var form = document.getElementById('otwForm');
+		if(!form.checkValidity()) {
+			alert('Please fill in the Title field.');
+			return;
+		}
+		var formData = new FormData(form);
+		var formObject = {};
+		for(var pair of formData.entries()) {
+			formObject[pair[0]] = pair[1];
+		}
+		google.script.run.withSuccessHandler(function() {
+			if(resetAfterSubmit) {
+				form.reset();
+			} else {
+				google.script.host.close();
+			}
+		}).processOTWForm(formObject);
+	}
+
+	function goBack() {
+		google.script.run.withSuccessHandler(function() {
+			google.script.host.close();
+		}).showInitialForm();
+	}
+	</script>
+</body>
+
+</html>

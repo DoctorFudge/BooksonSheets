@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Bookshop Display</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700&display=swap" rel="stylesheet">
+	<style>
+	body {
+		font-family: 'Merriweather', serif;
+		background-color: #ffffff;
+		color: #000000;
+		padding: 0;
+		margin: 0;
+		overflow-x: auto;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		height: 100vh;
+		box-sizing: border-box;
+	}
+
+	#backgroundContainer {
+		display: flex;
+		flex-direction: row;
+		align-items: flex-end;
+		position: relative;
+		padding: 300px 12px 0 12px;
+		background-repeat: repeat;
+		background-image: url('https://lh3.googleusercontent.com/d/1S7JT50ybj8rfAdPvS-w7yIJhFOks70kb');
+		width: 100%;
+		min-width: 100%;
+		box-sizing: border-box;
+	}
+
+	.wallArtContainer {
+		position: absolute;
+		top: 0;
+		width: calc(100% - 12px);
+		height: 300px;
+		overflow: hidden;
+	}
+
+	.floor {
+		width: 100%;
+		height: 200px;
+		background-repeat: repeat-x;
+		background-image: url('https://lh3.googleusercontent.com/d/1588SPhwvhleBCZyd5rhVgezfGpWcPzPa');
+		transform-origin: top;
+		transform: perspective(500px) rotateX(45deg);
+		margin: 0;
+		padding: 0;
+		box-sizing: border-box;
+	}
+
+	.bookcase {
+		width: 312px;
+		display: flex;
+		flex-direction: column;
+		background-image: url('https://lh3.googleusercontent.com/d/1Phm6V7M3rrrFTJF3x_e4-5cmupcMt4bs');
+		padding: 6px;
+		margin-right: 12px;
+		box-sizing: border-box;
+	}
+
+	.bookcase:last-child {
+		margin-right: 0;
+	}
+
+	.shelf {
+		display: flex;
+		justify-content: flex-start;
+		align-items: flex-end;
+		background-image: url('https://lh3.googleusercontent.com/d/1NKNbXFo0PaZxRKaLoQGxLe2DkiQE9Fub');
+		height: 120px;
+		width: 300px;
+		margin-bottom: 6px;
+		padding: 0 6px;
+		box-sizing: border-box;
+	}
+
+	.shelf:last-child {
+		margin-bottom: 0;
+	}
+
+	.book {
+		width: 15px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border: 1px solid #000000;
+		writing-mode: vertical-rl;
+		text-orientation: mixed;
+		text-align: center;
+		cursor: pointer;
+		box-sizing: border-box;
+		margin: 0;
+		padding: 0;
+		white-space: nowrap;
+		overflow: hidden;
+	}
+
+	.wall-art {
+		position: absolute;
+		transform-origin: center;
+	}
+
+	#bookDetailContainer {
+		display: none;
+		position: fixed;
+		top: 10px;
+		right: 10px;
+		background: rgba(50, 50, 50, 0.8);
+		color: white;
+		padding: 10px;
+		border-radius: 5px;
+		z-index: 1001;
+		width: 460px;
+		flex-direction: column;
+		align-items: start;
+		max-width: calc(220px + 200px + 20px);
+	}
+
+	#coverAndText {
+		display: flex;
+		align-items: center;
+	}
+
+	#bookCover {
+		width: 100px;
+		height: 200px;
+		object-fit: contain;
+		flex-shrink: 0;
+	}
+
+	#textContainer {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: flex-end;
+		padding-left: 20px;
+		flex-grow: 1;
+	}
+
+	#bookTitle {
+		font-size: 14px;
+		font-weight: bold;
+		text-align: right;
+		margin-bottom: 5px;
+	}
+
+	#bookAuthor {
+		font-size: 12px;
+		text-align: right;
+	}
+
+	#bookPublicationDate {
+		font-size: 10px;
+		text-align: right;
+		margin-top: 5px;
+	}
+
+	#bookDescription {
+		width: 100%;
+		text-align: justify;
+		margin-top: 10px;
+		font-size: 11px;
+		overflow: hidden;
+	}
+
+	#abeBooksLink {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		margin-top: 10px;
+	}
+
+	#abeBooksImage {
+		height: 50px;
+		width: auto;
+	}
+
+	#closeButton {
+		position: absolute;
+		top: 5px;
+		right: 5px;
+		cursor: pointer;
+		color: #fff;
+		background-color: #444;
+		border: none;
+		border-radius: 3px;
+		padding: 5px;
+	}
+
+	#backButton {
+		display: none;
+		/* Hide initially */
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 220px;
+		height: 40px;
+		background: rgba(40, 40, 40, 0.5);
+		color: white;
+		font-size: 18px;
+		border: none;
+		border-bottom-right-radius: 20px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		text-decoration: none;
+		z-index: 1002;
+	}
+	</style>
+	<script>
+	let minContentWidth = 0;
+	const extraPadding = 300;
+	let wallArtData = [];
+	let assignedArt = [];
+	let webAppUrl = '';
+	document.addEventListener('DOMContentLoaded', () => {
+		init();
+	});
+	window.addEventListener('resize', updateContainerWidths);
+
+	function init() {
+		fetchWantData();
+		fetchWallArtData();
+	}
+
+	function fetchWantData() {
+		google.script.run.withSuccessHandler(handleWantData).withFailureHandler(showError).getWantData();
+	}
+
+	function handleWantData(data) {
+		webAppUrl = data.webAppUrl;
+		displayBooks(data.want);
+		setupBackButton(webAppUrl);
+		minContentWidth = calcMinContentWidth(data.want);
+		updateContainerWidths();
+	}
+
+	function displayBooks(data) {
+		if(!data) {
+			showError('No data received or data structure incorrect.');
+			return;
+		}
+		const bookcases = createBookcases(data);
+		const backgroundContainer = createBackgroundContainer(bookcases);
+		document.getElementById('content').innerHTML = '';
+		document.getElementById('content').appendChild(backgroundContainer);
+		document.getElementById('content').appendChild(createFloor());
+		document.getElementById('content').appendChild(createBookDetailContainer());
+		updateContainerWidths();
+		createWallArtElements();
+		placeWallArt();
+	}
+
+	function createBookcases(data) {
+		const bookcases = [];
+		const booksPerShelf = 20;
+		const shelvesPerCase = 4;
+		for(let i = 0; i < data.length; i += booksPerShelf * shelvesPerCase) {
+			const bookcase = document.createElement('div');
+			bookcase.className = 'bookcase';
+			for(let j = i; j < i + booksPerShelf * shelvesPerCase; j += booksPerShelf) {
+				const shelf = createShelf(data, j, booksPerShelf);
+				bookcase.appendChild(shelf);
+			}
+			bookcases.push(bookcase);
+		}
+		return bookcases;
+	}
+
+	function createShelf(data, startIndex, booksPerShelf) {
+		const shelf = document.createElement('div');
+		shelf.className = 'shelf';
+		for(let k = startIndex; k < startIndex + booksPerShelf && k < data.length; k++) {
+			const book = createBookElement(data[k]);
+			shelf.appendChild(book);
+		}
+		return shelf;
+	}
+
+	function createBookElement(bookData) {
+		const book = document.createElement('div');
+		book.className = 'book';
+		book.style.backgroundColor = bookData[7];
+		book.style.color = bookData[8];
+		book.style.height = `${bookData[9]}px`;
+		book.textContent = bookData[6];
+		adjustFontSize(book, bookData[9]);
+		book.addEventListener('click', () => showBookDetails(bookData));
+		return book;
+	}
+
+	function createBackgroundContainer(bookcases) {
+		const backgroundContainer = document.createElement('div');
+		backgroundContainer.id = 'backgroundContainer';
+		backgroundContainer.append(...bookcases);
+		const wallArtContainer = createWallArtContainer();
+		backgroundContainer.appendChild(wallArtContainer);
+		return backgroundContainer;
+	}
+
+	function createWallArtContainer() {
+		const wallArtContainer = document.createElement('div');
+		wallArtContainer.className = 'wallArtContainer';
+		return wallArtContainer;
+	}
+
+	function createFloor() {
+		const floor = document.createElement('div');
+		floor.className = 'floor';
+		return floor;
+	}
+
+	function createBookDetailContainer() {
+		const bookDetailContainer = document.createElement('div');
+		bookDetailContainer.id = 'bookDetailContainer';
+		bookDetailContainer.innerHTML = `
+                <button id="closeButton" onclick="closeBookDetail()">×</button>
+                <div id="coverAndText">
+                    <img alt="" id="bookCover" src="">
+                    <div id="textContainer">
+                        <div id="bookTitle"></div>
+                        <div id="bookAuthor"></div>
+                        <div id="bookPublicationDate"></div>
+                    </div>
+                </div>
+                <div id="bookDescription"></div>
+                <div id="abeBooksLink">
+                    <a id="abeBooksAnchor" target="_blank"><img id="abeBooksImage" src="https://lh3.googleusercontent.com/d/1M8SP7saTIcRftUYFrtdpeWcXEp4C5yO8" alt="AbeBooks"></a>
+                </div>`;
+		return bookDetailContainer;
+	}
+
+	function setupBackButton(url) {
+		const backButton = document.getElementById('backButton');
+		backButton.href = url;
+		backButton.style.display = 'flex';
+	}
+
+	function adjustFontSize(element, height) {
+		const nameLength = element.textContent.length;
+		const avgCharWidth = 8;
+		const nameWidth = nameLength * avgCharWidth;
+		let fontSize = 12;
+		if(nameWidth > height) {
+			const scaleFactor = (height / nameWidth) * 0.95;
+			fontSize = 12 * scaleFactor;
+		}
+		element.style.fontSize = `${fontSize}px`;
+	}
+
+	function showBookDetails(book) {
+		const detailContainer = document.getElementById('bookDetailContainer');
+		const bookCover = document.getElementById('bookCover');
+		bookCover.src = "";
+		bookCover.style.display = 'block';
+		bookCover.style.width = '100px';
+		bookCover.style.height = '200px';
+		document.getElementById('bookTitle').textContent = book[0];
+		document.getElementById('bookAuthor').textContent = 'by ' + book[1];
+		document.getElementById('bookPublicationDate').textContent = book[4];
+		document.getElementById('bookDescription').textContent = book[2];
+		document.getElementById('abeBooksAnchor').href = book[5];
+		fetchBookCover(book[0], book[1]).then((coverUrl) => {
+			if(coverUrl) {
+				bookCover.src = coverUrl;
+				bookCover.style.width = 'auto';
+			} else {
+				bookCover.style.display = 'none';
+			}
+		});
+		detailContainer.style.display = 'block';
+	}
+
+	function fetchBookCover(title, author) {
+		const query = `${title} ${author}`;
+		const apiUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}`;
+		return fetch(apiUrl).then(response => response.json()).then(data => {
+			if(data.items && data.items.length > 0) {
+				const book = data.items[0];
+				if(book.volumeInfo.imageLinks && book.volumeInfo.imageLinks.thumbnail) {
+					return book.volumeInfo.imageLinks.thumbnail.replace('http:', 'https:');
+				}
+			}
+			return null;
+		}).catch(error => {
+			console.error('Error fetching book cover:', error);
+			return null;
+		});
+	}
+
+	function closeBookDetail() {
+		document.getElementById('bookDetailContainer').style.display = 'none';
+	}
+
+	function showError(error) {
+		console.error('Error fetching data:', error);
+		document.getElementById('content').innerHTML = '<div>Error fetching data. Check console for details.</div>';
+	}
+
+	function calcMinContentWidth(data) {
+		const totalBooks = data.length;
+		const numBookcases = Math.ceil(totalBooks / 80);
+		return 6 + (numBookcases * 324) + extraPadding;
+	}
+
+	function updateContainerWidths() {
+		const backgroundContainer = document.getElementById('backgroundContainer');
+		const floor = document.querySelector('.floor');
+		const totalWidth = Math.max(minContentWidth, window.innerWidth);
+		if(backgroundContainer) {
+			backgroundContainer.style.minWidth = `${totalWidth}px`;
+			backgroundContainer.style.width = '100%';
+		}
+		if(floor) {
+			floor.style.minWidth = `${totalWidth}px`;
+			floor.style.width = '100%';
+		}
+		placeWallArt();
+	}
+
+	function fetchWallArtData() {
+		google.script.run.withSuccessHandler(handleWallArtData).withFailureHandler(showError).getWallArtData();
+	}
+
+	function handleWallArtData(data) {
+		wallArtData = data.map(art => ({
+			...art,
+			rotation: art.frame === 'No' ? Math.random() * 4 - 2 : 0
+		}));
+		assignedArt = shuffleArray([...wallArtData]);
+		createWallArtElements();
+		placeWallArt();
+	}
+
+	function shuffleArray(array) {
+		for(let i = array.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[array[i], array[j]] = [array[j], array[i]];
+		}
+		return array;
+	}
+
+	function createWallArtElements() {
+		const wallArtContainer = document.querySelector('.wallArtContainer');
+		if(!wallArtContainer) return;
+		wallArtContainer.innerHTML = '';
+		assignedArt.forEach((art, index) => {
+			const artElement = createWallArtElement(art, index);
+			wallArtContainer.appendChild(artElement);
+		});
+	}
+
+	function createWallArtElement(art, index) {
+		const artElement = document.createElement('img');
+		artElement.src = art.url;
+		artElement.alt = art.name;
+		artElement.className = 'wall-art';
+		artElement.style.width = `${art.width}px`;
+		artElement.style.height = `${art.height}px`;
+		artElement.style.transform = `rotate(${art.rotation}deg)`;
+		artElement.dataset.index = index;
+		return artElement;
+	}
+
+	function placeWallArt() {
+		const wallArtContainer = document.querySelector('.wallArtContainer');
+		if(!wallArtContainer) return;
+		const startY = 150;
+		let currentX = 100;
+		const spaceBetween = 300;
+		assignedArt.forEach((art, index) => {
+			const artElement = wallArtContainer.children[index];
+			if(artElement) {
+				artElement.style.left = `${currentX}px`;
+				artElement.style.top = `${startY - art.height / 2}px`;
+				currentX += art.width / 2 + spaceBetween;
+			}
+		});
+	}
+	</script>
+</head>
+
+<body>
+	<a id="backButton" href="#" target="_blank">↩BOOKSHELVES</a>
+	<div id="content">
+		<div>Loading...</div>
+	</div>
+</body>
+
+</html>

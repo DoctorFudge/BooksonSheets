@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<base target="_top">
+</head>
+
+<body>
+	<form id="databaseForm">
+		<button type="button" onclick="goBack()">Back</button>
+		<p>Please fill in the following details:</p>
+		<label for="Title">Title:</label><br>
+		<input type="text" id="Title" name="Title" required><br>
+		<label for="Author">Author:</label><br>
+		<input type="text" id="Author" name="Author"><br>
+		<label for="Author l-f">Author l-f:</label><br>
+		<input type="text" id="Author l-f" name="Author l-f"><br>
+		<label for="Series">Series:</label><br>
+		<input type="text" id="Series" name="Series"><br>
+		<label for="No. in Series">No. in Series:</label><br>
+		<input type="text" id="No. in Series" name="No. in Series"><br>
+		<label for="Genre">Genre:</label><br>
+		<input type="text" id="Genre" name="Genre"><br>
+		<label for="Description">Short Description:</label><br>
+		<textarea id="Description" name="Description" rows="4" cols="50"></textarea><br>
+		<label for="Tags">Tags:</label><br>
+		<input type="text" id="Tags" name="Tags"><br>
+		<label for="Original Publication Date">Original Publication Date:</label><br>
+		<input type="text" id="Original Publication Date" name="Original Publication Date"><br>
+		<label for="Publisher">Publisher:</label><br>
+		<input type="text" id="Publisher" name="Publisher"><br>
+		<label for="Edition Publication Date">Edition Publication Date:</label><br>
+		<input type="text" id="Edition Publication Date" name="Edition Publication Date"><br>
+		<label for="ISBN13">ISBN13:</label><br>
+		<input type="text" id="ISBN13" name="ISBN13"><br>
+		<button type="button" onclick="fetchBookDataByISBN13()">Fetch Book Data by ISBN13</button><br>
+		<label for="ISBN">ISBN:</label><br>
+		<input type="text" id="ISBN" name="ISBN"><br>
+		<button type="button" onclick="fetchBookDataByISBN()">Fetch Book Data by ISBN</button><br>
+		<label for="Binding">Binding:</label><br>
+		<select id="Binding" name="Binding">
+			<option value="HC">Hardcover</option>
+			<option value="HCDJ">Hardcover w/ Dust Jacket</option>
+			<option value="PB">Paperback</option>
+			<option value="S">Special</option>
+		</select><br>
+		<label for="Thickness">Thickness:</label><br>
+		<input type="text" id="Thickness" name="Thickness">
+		<select id="ThicknessInputUnit" name="ThicknessInputUnit">
+			<option value="mm">mm</option>
+			<option value="cm">cm</option>
+			<option value="in">inches</option>
+		</select>
+		<select id="ThicknessOutputUnit" name="ThicknessOutputUnit">
+			<option value="in">inches</option>
+			<option value="cm">cm</option>
+			<option value="mm">mm</option>
+		</select><br>
+		<label for="Height">Height:</label><br>
+		<input type="text" id="Height" name="Height">
+		<select id="HeightInputUnit" name="HeightInputUnit">
+			<option value="in">inches</option>
+			<option value="cm">cm</option>
+			<option value="mm">mm</option>
+		</select>
+		<select id="HeightOutputUnit" name="HeightOutputUnit">
+			<option value="in">inches</option>
+			<option value="cm">cm</option>
+			<option value="mm">mm</option>
+		</select><br>
+		<label for="Width">Width:</label><br>
+		<input type="text" id="Width" name="Width">
+		<select id="WidthInputUnit" name="WidthInputUnit">
+			<option value="in">inches</option>
+			<option value="cm">cm</option>
+			<option value="mm">mm</option>
+		</select>
+		<select id="WidthOutputUnit" name="WidthOutputUnit">
+			<option value="in">inches</option>
+			<option value="cm">cm</option>
+			<option value="mm">mm</option>
+		</select><br>
+		<label for="Page Count">Page Count:</label><br>
+		<input type="text" id="Page Count" name="Page Count"><br>
+		<label for="Nonfiction">Is the book nonfiction?</label><br>
+		<select id="Nonfiction" name="Nonfiction">
+			<option value="0">No</option>
+			<option value="1">Yes</option>
+		</select><br>
+		<label for="Favorite">Is the book a favorite of yours?</label><br>
+		<select id="Favorite" name="Favorite">
+			<option value="0">No</option>
+			<option value="1">Yes</option>
+		</select><br>
+		<label for="Comic">Is the book a comic?</label><br>
+		<select id="Comic" name="Comic">
+			<option value="0">No</option>
+			<option value="1">Yes</option>
+		</select><br>
+		<label for="HTML">What is the HTML color code of the book's spine?</label><br>
+		<input type="text" id="HTML" name="HTML"><br>
+		<label for="Cover">Cover URL:</label><br>
+		<input type="text" id="Cover" name="Cover"><br>
+		<button type="button" onclick="processForm(false)">Submit</button> <button type="button" onclick="processForm(true)">Submit and Add Another</button>
+	</form>
+	<!-- Confirmation dialog template -->
+	<div id="confirmationDialog" style="display: none;">
+		<h3>Confirm Book Data</h3>
+		<img id="coverImage" src="" alt="Cover Image" style="max-width: 100px;"><br>
+		<p id="bookDetails"></p>
+		<button type="button" onclick="confirmBookData()">Confirm</button>
+		<button type="button" onclick="cancelConfirmation()">Cancel</button>
+	</div>
+	<script>
+	let fetchedBookData = {};
+
+	function fetchBookDataByISBN() {
+		fetchBookData('ISBN');
+	}
+
+	function fetchBookDataByISBN13() {
+		fetchBookData('ISBN13');
+	}
+
+	function fetchBookData(isbnType) {
+		var isbn = document.getElementById(isbnType).value;
+		if(isbn) {
+			var apiUrl = 'https://www.googleapis.com/books/v1/volumes?q=isbn:' + isbn;
+			fetch(apiUrl).then(response => response.json()).then(data => {
+				if(data.totalItems > 0) {
+					var book = data.items[0].volumeInfo;
+					fetchedBookData = {
+						title: book.title || '',
+						authors: book.authors ? book.authors.join(', ') : '',
+						publisher: book.publisher || '',
+						pageCount: book.pageCount || '',
+						cover: book.imageLinks ? book.imageLinks.thumbnail : '',
+						publishedDate: formatDate(book.publishedDate)
+					};
+					showConfirmationDialog(fetchedBookData);
+				} else {
+					alert('No book found with the given ISBN.');
+				}
+			}).catch(error => {
+				console.error('Error fetching book data:', error);
+				alert('Failed to fetch book data. Please check the ISBN and try again.');
+			});
+		} else {
+			alert('Please enter an ' + isbnType + ' to fetch book data.');
+		}
+	}
+
+	function showConfirmationDialog(bookData) {
+		document.getElementById('coverImage').src = bookData.cover;
+		document.getElementById('bookDetails').innerHTML = `
+        <strong>Title:</strong> ${bookData.title}<br>
+        <strong>Author:</strong> ${bookData.authors}<br>
+        <strong>Publisher:</strong> ${bookData.publisher}<br>
+        <strong>Page Count:</strong> ${bookData.pageCount}<br>
+        <strong>Published Date:</strong> ${bookData.publishedDate}
+      `;
+		document.getElementById('confirmationDialog').style.display = 'block';
+	}
+
+	function confirmBookData() {
+		document.getElementById('Title').value = fetchedBookData.title;
+		document.getElementById('Author').value = fetchedBookData.authors;
+		document.getElementById('Publisher').value = fetchedBookData.publisher;
+		document.getElementById('Page Count').value = fetchedBookData.pageCount;
+		document.getElementById('Cover').value = fetchedBookData.cover;
+		document.getElementById('Edition Publication Date').value = fetchedBookData.publishedDate;
+		document.getElementById('confirmationDialog').style.display = 'none';
+	}
+
+	function cancelConfirmation() {
+		document.getElementById('confirmationDialog').style.display = 'none';
+	}
+
+	function formatDate(dateString) {
+		if(!dateString) return '';
+		var dateParts = dateString.split('-');
+		var year = dateParts[0];
+		var month = dateParts[1] || '1';
+		var day = dateParts[2] || '1';
+		return month + '/' + day + '/' + year;
+	}
+
+	function processForm(resetAfterSubmit) {
+		var form = document.getElementById('databaseForm');
+		if(!form.checkValidity()) {
+			alert('Please fill in the Title field.');
+			return;
+		}
+		var formData = new FormData(form);
+		var formObject = {};
+		for(var pair of formData.entries()) {
+			formObject[pair[0]] = pair[1];
+		}
+		google.script.run.withSuccessHandler(function() {
+			if(resetAfterSubmit) {
+				form.reset();
+			} else {
+				google.script.host.close();
+			}
+		}).processDatabaseForm(formObject);
+	}
+
+	function goBack() {
+		google.script.run.withSuccessHandler(function() {
+			google.script.host.close();
+		}).showInitialForm();
+	}
+	</script>
+</body>
+
+</html>

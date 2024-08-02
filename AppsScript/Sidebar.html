@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<base target="_top">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
+	<style>
+	body {
+		font-family: 'Merriweather', serif;
+		font-size: 14px;
+		background-color: #272727;
+		color: white;
+	}
+
+	.section-header {
+		font-size: medium;
+		font-weight: bold;
+		margin-top: 20px;
+	}
+
+	.subsection-header {
+		font-size: smaller;
+		font-weight: bold;
+		margin-top: 15px;
+	}
+
+	.divider {
+		border-bottom: 1px solid #ccc;
+		margin-top: 10px;
+		margin-bottom: 10px;
+	}
+
+	.image-container img {
+		max-width: 200px;
+		max-height: 200px;
+		border: 1px solid black;
+		padding: 2px;
+		box-sizing: border-box;
+	}
+
+	select,
+	input[type="text"] {
+		max-width: 90px;
+		background-color: #2d2d35;
+		color: white;
+		font-family: 'Merriweather', serif;
+		border: 1px solid white;
+		border-radius: 5px;
+		padding: 5px;
+	}
+
+	.sort-level {
+		display: flex;
+		align-items: center;
+	}
+
+	.sort-level span,
+	.sort-level select {
+		margin-right: 5px;
+		/* Add space between the label and dropdown */
+	}
+
+	#overlay {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background-color: rgba(0, 0, 0, 0.5);
+		color: white;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		text-align: center;
+		font-size: 24px;
+		z-index: 1000;
+		display: none;
+	}
+
+	button {
+		background-color: #000000;
+		color: white;
+		font-family: 'Merriweather', serif;
+		border: none;
+		border-radius: 5px;
+		padding: 10px;
+		cursor: pointer;
+	}
+
+	button:hover {
+		background-color: #1a1a1a;
+	}
+	</style>
+</head>
+
+<body onload="fetchData()">
+	<div id="overlay">Processing...</div>
+	<div class="section-header">Currently Reading</div>
+	<button onclick="fetchData()">Refresh</button>
+	<div id="currentlyReading"></div>
+	<div class="image-container">
+		<img id="currentBookImage" src="" alt="Book Cover">
+	</div>
+	<div class="subsection-header">New Book ID</div>
+	<input type="text" id="bookId" onchange="updateData()"><br><br>
+	<button onclick="wrapperFunction('startReading')">Start Reading</button>
+	<button onclick="wrapperFunction('doneReading')">Finish Reading</button>
+	<div class="divider"></div>
+	<div class="section-header">Sorting</div>
+	<button onclick="fetchData()">Refresh</button>
+	<div id="sortOptionsContainer"></div>
+	<button style="margin-top: 10px;" onclick="wrapperFunction('combinedFunction')">FULL SORT</button><br><br>
+	<strong>Neatly Filled Shelves:</strong>
+	<div id="shelfSequenceRatio"></div>
+	<div id="progressBarContainer" style="width: 100%; height: 20px; background-color: #ddd;">
+		<div id="progressBar" style="height: 100%; width: 0%; background-color: red;"></div>
+	</div>
+	<br>
+	<button onclick="wrapperFunction('updateColors')" style="margin-top: 10px;">Just Update Colors</button><br><br> (Use if you rearranged books manually)<br><br>
+	<strong>Preset:</strong> <input type="text" id="presetName" onchange="updateData()"><br><br>
+	<button onclick="wrapperFunction('saveSortPreset')">Save</button>
+	<button onclick="wrapperFunction('applySortPreset')">Load</button>
+	<div class="subsection-header">Presets:</div>
+	<div id="sortPresetsList"></div>
+	<div style="margin-top: 20px;">
+		<strong>Find Shelf Filler:</strong>
+		<div style="display: flex; justify-content: space-between;">
+			<div>Case: <input type="text" id="caseNumber" onchange="updateData()"></div>
+			<div>Shelf: <input type="text" id="shelfNumber" onchange="updateData()"></div>
+		</div>
+		<button style="margin-top: 10px;" onclick="wrapperFunction('findOptimalInsertion')">Find a Space Filler</button>
+	</div>
+	<div class="divider"></div>
+	<div class="section-header">Acquisitions, Additions, and Search</div>
+	<button onclick="fetchData()">Refresh</button>
+	<div style="margin-bottom: 10px;" style="display: flex; justify-content: space-between;">
+		<div>Title: <input type="text" id="titleSearch" onchange="updateData()"></div>
+		<div>Author: <input type="text" id="authorSearch" onchange="updateData()"></div>
+	</div>
+	<button onclick="wrapperFunction('bookFinder')">Find</button>
+	<button onclick="wrapperFunction('acqBook')">Acquire</button>
+	<button onclick="wrapperFunction('bookOrdered')">Order</button><br>
+	<button onclick="wrapperFunction('showInitialForm')" style="margin-top: 5px;">Add Book</button><br>
+	<button onclick="wrapperFunction('showPublishersForm')" style="margin-top: 5px;">Add Publisher</button><br>
+	<button onclick="wrapperFunction('showAuthorsForm')" style="margin-top: 5px;">Add Author</button>
+	<div class="divider"></div>
+	<div class="section-header">Misc</div>
+	<button onclick="wrapperFunction('assignBookIDs')">Generate IDs</button>
+	<button onclick="wrapperFunction('takeItToTheCleaners')">Clean-Up</button>
+	<button onclick="wrapperFunction('noteMaster')">Update Notes</button>
+	<button onclick="fetchData()">Refresh</button>
+	<script>
+	var initialData;
+
+	function fetchData() {
+		google.script.run.withSuccessHandler(function(data) {
+			populateForm(data);
+			initialData = JSON.stringify({
+				sortOptions: Array.from({
+					length: 13
+				}, (_, i) => document.getElementById('sortOption' + i).value),
+				sortOrders: Array.from({
+					length: 13
+				}, (_, i) => document.getElementById('sortOrder' + i).value),
+				presetName: document.getElementById('presetName').value,
+				bookId: document.getElementById('bookId').value,
+				titleSearch: document.getElementById('titleSearch').value,
+				authorSearch: document.getElementById('authorSearch').value,
+				caseNumber: document.getElementById('caseNumber').value,
+				shelfNumber: document.getElementById('shelfNumber').value
+			});
+		}).getControlPanelData();
+		google.script.run.withSuccessHandler(populateSortOptions).getDropdownOptions();
+		google.script.run.withSuccessHandler(populateSortPresets).getSortPresets();
+	}
+
+	function populateForm(data) {
+		document.getElementById('currentlyReading').textContent = data.currentlyReadingTitle + ', by ' + data.currentlyReadingAuthor;
+		document.getElementById('currentBookImage').src = data.currentBookImage;
+		document.getElementById('bookId').value = data.bookId;
+		document.getElementById('titleSearch').value = data.titleSearch;
+		document.getElementById('authorSearch').value = data.authorSearch;
+		document.getElementById('presetName').value = data.presetName;
+		document.getElementById('caseNumber').value = data.caseNumber;
+		document.getElementById('shelfNumber').value = data.shelfNumber;
+		var ratio = data.shelfSequenceRatio;
+		document.getElementById('shelfSequenceRatio').textContent = ratio;
+		var [numerator, denominator] = ratio.split('/').map(Number);
+		var percentage = numerator / denominator * 100;
+		document.getElementById('progressBar').style.width = percentage + '%';
+		document.getElementById('progressBar').style.backgroundColor = `rgb(${255 * (1 - percentage / 100)}, ${255 * (percentage / 100)}, 0)`;
+	}
+
+	function populateSortOptions(data) {
+		var sortOptionsContainer = document.getElementById('sortOptionsContainer');
+		sortOptionsContainer.innerHTML = ''; // Clear existing content
+		for(var i = 0; i < 13; i++) { // Fixed number of levels
+			var levelDiv = document.createElement('div');
+			levelDiv.className = 'sort-level';
+			var levelLabel = document.createElement('span');
+			levelLabel.textContent = 'Level ' + (i + 1) + ': ';
+			levelDiv.appendChild(levelLabel);
+			var optionSelect = document.createElement('select');
+			optionSelect.setAttribute('id', 'sortOption' + i);
+			optionSelect.setAttribute('onchange', 'updateData()');
+			data.sortOptions.forEach(function(option) {
+				var opt = document.createElement('option');
+				opt.value = option;
+				opt.text = option;
+				optionSelect.appendChild(opt);
+			});
+			optionSelect.value = data.currentSortOptions[i]; // Set the current value
+			levelDiv.appendChild(optionSelect);
+			var orderSelect = document.createElement('select');
+			orderSelect.setAttribute('id', 'sortOrder' + i);
+			orderSelect.setAttribute('onchange', 'updateData()');
+			data.sortOrders.forEach(function(order) {
+				var opt = document.createElement('option');
+				opt.value = order;
+				opt.text = order;
+				orderSelect.appendChild(opt);
+			});
+			orderSelect.value = data.currentSortOrders[i]; // Set the current value
+			levelDiv.appendChild(orderSelect);
+			sortOptionsContainer.appendChild(levelDiv);
+		}
+	}
+
+	function populateSortPresets(presets) {
+		var sortPresetsList = document.getElementById('sortPresetsList');
+		sortPresetsList.innerHTML = ''; // Clear existing content
+		presets.forEach(function(preset) {
+			var listItem = document.createElement('div');
+			listItem.textContent = preset;
+			sortPresetsList.appendChild(listItem);
+		});
+	}
+
+	function updateData() {
+		var sortOptions = [];
+		var sortOrders = [];
+		for(var i = 0; i < 13; i++) {
+			sortOptions.push(document.getElementById('sortOption' + i).value);
+			sortOrders.push(document.getElementById('sortOrder' + i).value);
+		}
+		var data = {
+			sortOptions: sortOptions,
+			sortOrders: sortOrders,
+			presetName: document.getElementById('presetName').value,
+			bookId: document.getElementById('bookId').value,
+			titleSearch: document.getElementById('titleSearch').value,
+			authorSearch: document.getElementById('authorSearch').value,
+			caseNumber: document.getElementById('caseNumber').value,
+			shelfNumber: document.getElementById('shelfNumber').value
+		};
+		google.script.run.updateControlPanelData(data);
+	}
+
+	function wrapperFunction(functionName) {
+		showOverlay();
+		var currentData = {
+			sortOptions: Array.from({
+				length: 13
+			}, (_, i) => document.getElementById('sortOption' + i).value),
+			sortOrders: Array.from({
+				length: 13
+			}, (_, i) => document.getElementById('sortOrder' + i).value),
+			presetName: document.getElementById('presetName').value,
+			bookId: document.getElementById('bookId').value,
+			titleSearch: document.getElementById('titleSearch').value,
+			authorSearch: document.getElementById('authorSearch').value,
+			caseNumber: document.getElementById('caseNumber').value,
+			shelfNumber: document.getElementById('shelfNumber').value
+		};
+		var currentDataStr = JSON.stringify(currentData);
+		if(initialData !== currentDataStr) {
+			google.script.run.withSuccessHandler(function() {
+				google.script.run.withSuccessHandler(fetchData)[functionName]();
+				initialData = currentDataStr;
+			}).updateControlPanelData(currentData);
+		} else {
+			google.script.run.withSuccessHandler(fetchData)[functionName]();
+		}
+	}
+
+	function showOverlay() {
+		var overlay = document.getElementById('overlay');
+		overlay.style.display = 'flex';
+		setTimeout(hideOverlay, 5000);
+	}
+
+	function hideOverlay() {
+		var overlay = document.getElementById('overlay');
+		overlay.style.display = 'none';
+	}
+	</script>
+</body>
+
+</html>

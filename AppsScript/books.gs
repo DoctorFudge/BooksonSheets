@@ -355,38 +355,43 @@ function acqBook() {
 }
 
 function processMoveToDatabaseForm(formObject) {
-	const ss = SpreadsheetApp.getActiveSpreadsheet();
-	const wantSheet = ss.getSheetByName('Want');
-	const onTheWaySheet = ss.getSheetByName('OntheWay');
-	const databaseSheet = ss.getSheetByName('Database');
-	const databaseMap = getDatabaseMap();
-	const matchedRow = formObject.matchedRow;
-	const matchedSheet = formObject.matchedSheet;
-	var newRow = Array(databaseSheet.getLastColumn()).fill('');
-	for (var key in formObject) {
-		if (databaseMap[key] !== undefined) {
-			if ((key === 'Thickness' || key === 'Height' || key === 'Width') && formObject[key].trim() !== '') {
-				var value = convertUnits(parseFloat(formObject[key]), formObject[key + 'InputUnit'], formObject[key + 'OutputUnit']);
-				newRow[databaseMap[key]] = value;
-			} else if (key === 'HTML') {
-				var htmlValue = formObject[key].trim();
-				if (htmlValue && htmlValue.charAt(0) !== '#') {
-					htmlValue = '#' + htmlValue;
-				}
-				newRow[databaseMap[key]] = htmlValue;
-			} else {
-				newRow[databaseMap[key]] = formObject[key];
-			}
-		}
-	}
-	const today = new Date();
-	const dateString = (today.getMonth() + 1) + '/' + today.getDate() + '/' + today.getFullYear();
-	newRow[databaseMap['Acquisition Date']] = dateString;
-	databaseSheet.appendRow(newRow);
-	const sheet = matchedSheet === 'Want' ? wantSheet : onTheWaySheet;
-	sheet.deleteRow(matchedRow);
-	SpreadsheetApp.getUi().alert('Book moved to Database.');
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const wantSheet = ss.getSheetByName('Want');
+  const onTheWaySheet = ss.getSheetByName('OntheWay');
+  const databaseSheet = ss.getSheetByName('Database');
+  const databaseMap = getDatabaseMap();
+  const matchedRow = parseInt(formObject.matchedRow, 10);
+  const matchedSheet = formObject.matchedSheet;
+
+  var newRow = Array(databaseSheet.getLastColumn()).fill('');
+  for (var key in formObject) {
+    if (databaseMap[key] !== undefined) {
+      if ((key === 'Thickness' || key === 'Height' || key === 'Width') && formObject[key].trim() !== '') {
+        var value = convertUnits(parseFloat(formObject[key]), formObject[key + 'InputUnit'], formObject[key + 'OutputUnit']);
+        newRow[databaseMap[key]] = value;
+      } else if (key === 'HTML') {
+        var htmlValue = formObject[key].trim();
+        if (htmlValue && htmlValue.charAt(0) !== '#') {
+          htmlValue = '#' + htmlValue;
+        }
+        newRow[databaseMap[key]] = htmlValue;
+      } else {
+        newRow[databaseMap[key]] = formObject[key];
+      }
+    }
+  }
+
+  const today = new Date();
+  const dateString = (today.getMonth() + 1) + '/' + today.getDate() + '/' + today.getFullYear();
+  newRow[databaseMap['Acquisition Date']] = dateString;
+
+  databaseSheet.appendRow(newRow);
+  const sheet = matchedSheet === 'Want' ? wantSheet : onTheWaySheet;
+  sheet.deleteRow(matchedRow);
+
+  SpreadsheetApp.getUi().alert('Book moved to Database.');
 }
+
 
 function formatDate(date) {
 	if (date instanceof Date) {

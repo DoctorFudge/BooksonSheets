@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<base target="_top">
+</head>
+
+<body>
+	<form id="initialForm">
+		<p>I would like to:</p>
+		<input type="radio" id="newlyAcquired" name="initialOption" value="1">
+		<label for="newlyAcquired">Add a newly acquired book.</label><br>
+		<input type="radio" id="wantedList" name="initialOption" value="2">
+		<label for="wantedList">Add a book to my wanted list.</label><br>
+		<input type="radio" id="orderedOnline" name="initialOption" value="3">
+		<label for="orderedOnline">Add a book I've ordered online.</label><br>
+		<button type="button" onclick="processForm()">Submit</button>
+	</form>
+	<script>
+	function processForm() {
+		var form = document.getElementById('initialForm');
+		var formData = new FormData(form);
+		var formObject = {};
+		for(var pair of formData.entries()) {
+			formObject[pair[0]] = pair[1];
+		}
+		google.script.run.withSuccessHandler(function() {
+			google.script.host.close();
+		}).processInitialForm(formObject);
+	}
+	</script>
+</body>
+
+</html>

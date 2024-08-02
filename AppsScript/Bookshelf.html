@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+	<meta charset="UTF-8">
+	<title>Bookshelf Display</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900&display=swap" rel="stylesheet">
+	<style>
+	body {
+		background-color: #000;
+		margin: 0;
+		overflow: auto;
+		position: relative;
+		font-family: 'Merriweather', serif
+	}
+
+	#dontWorryAboutIt {
+		position: absolute;
+		bottom: 0px;
+		right: -300px;
+		z-index: -1
+	}
+
+	#backgroundContainer {
+		position: relative;
+		padding: 10px 10px 0 210px;
+		background-repeat: repeat;
+		background-image: url('https://lh3.googleusercontent.com/d/1S7JT50ybj8rfAdPvS-w7yIJhFOks70kb');
+		margin-bottom: 0;
+		overflow: visible;
+		min-width: calc(100% + 200px)
+	}
+
+	.floor {
+		width: 100% + 432px;
+		height: 200px;
+		background-repeat: repeat-x;
+		background-image: url('https://lh3.googleusercontent.com/d/1588SPhwvhleBCZyd5rhVgezfGpWcPzPa');
+		transform-origin: top;
+		transform: perspective(500px) rotateX(45deg);
+		margin-top: 0;
+		z-index: 0;
+		min-width: calc(100% + 420px)
+	}
+
+	#lecternContainer {
+		position: absolute;
+		left: 10px;
+		bottom: 0;
+		width: 200px;
+		height: 300px;
+		display: flex;
+		justify-content: center;
+		align-items: flex-end
+	}
+
+	#currentBookCover {
+		position: absolute;
+		bottom: 200px;
+		height: auto;
+		max-height: none;
+		width: auto;
+		max-width: calc(100% - 2px);
+		object-fit: contain;
+		border: 1px solid transparent;
+		cursor: pointer
+	}
+
+	#currentPlaceholder {
+		position: absolute;
+		bottom: 200px;
+		display: none;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		font-size: 0;
+		color: #FFFFFF;
+		background-color: rgba(211, 211, 211, 0.5);
+		border: 1px solid black;
+		width: auto;
+		max-width: 100%;
+		cursor: default
+	}
+
+	#lecternImage {
+		width: 200px;
+		height: 300px
+	}
+
+	#bookcases {
+		display: flex;
+		flex-direction: row;
+		overflow-x: auto;
+		overflow: visible;
+		background-color: transparent;
+		background-image: none;
+		align-items: flex-end;
+		padding: 100px 10px 0 10px;
+		margin: 0
+	}
+
+	.columnElem {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		margin-right: 0px;
+		background-clip: padding-box;
+		background-repeat: repeat;
+		background-image: url('https://lh3.googleusercontent.com/d/1Phm6V7M3rrrFTJF3x_e4-5cmupcMt4bs')
+	}
+
+	.columnElem:last-child {
+		margin-right: 0;
+		border-right: none
+	}
+
+	.bookcase {
+		display: flex;
+		flex-direction: row;
+		background-repeat: repeat;
+		background-image: url('https://lh3.googleusercontent.com/d/1Phm6V7M3rrrFTJF3x_e4-5cmupcMt4bs');
+		padding: 12px 12px 0 12px;
+		margin-right: 10px;
+		border: 0;
+		overflow: visible;
+		flex-shrink: 0;
+		width: auto
+	}
+
+	.shelf {
+		display: flex;
+		justify-content: flex-start;
+		background-repeat: repeat;
+		background-image: url('https://lh3.googleusercontent.com/d/1NKNbXFo0PaZxRKaLoQGxLe2DkiQE9Fub');
+		margin-bottom: 5px;
+		margin-right: 0px;
+		align-items: flex-end;
+		overflow: visible;
+		border-top: 1px solid transparent;
+		border-image: url('https://lh3.googleusercontent.com/d/1Phm6V7M3rrrFTJF3x_e4-5cmupcMt4bs') 30 stretch;
+		padding-right: 0
+	}
+
+	.book {
+		position: relative;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		padding: 0;
+		color: #000;
+		font-size: 12px;
+		box-sizing: border-box;
+		width: auto;
+		height: calc(100% - 2px);
+		cursor: pointer;
+		writing-mode: vertical-rl;
+		text-orientation: mixed;
+		text-align: center;
+		overflow: hidden;
+		line-height: calc(100% - 2px)
+	}
+
+	.bookDisplay {
+		position: relative;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		box-sizing: border-box
+	}
+
+	.displayedBook {
+		position: relative;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		padding: 0;
+		background-size: cover;
+		background-repeat: no-repeat;
+		box-sizing: border-box;
+		cursor: pointer;
+		border: 1px solid black
+	}
+
+	.flashing {
+		position: relative;
+		border: 2px dotted white;
+		box-sizing: border-box;
+		background-color: rgba(255, 255, 255, 0.9);
+		animation: flash 5s linear infinite
+	}
+
+	@keyframes flash {
+
+		0%,
+		100% {
+			opacity: 0.9
+		}
+
+		75% {
+			opacity: 0.1
+		}
+
+		50% {
+			opacity: 0.9
+		}
+
+		25% {
+			opacity: 0.1
+		}
+	}
+
+	#bookDetailContainer {
+		display: none;
+		position: fixed;
+		top: 10px;
+		right: 10px;
+		background: rgba(50, 50, 50, 0.8);
+		color: #FFFFFF;
+		padding: 10px;
+		border-radius: 5px;
+		z-index: 1001;
+		width: auto;
+		flex-direction: column;
+		align-items: flex-end;
+		max-width: calc(220px + 200px + 20px)
+	}
+
+	#coverAndText {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		max-width: 450px
+	}
+
+	#bookCover {
+		max-width: 215px;
+		max-height: 200px;
+		width: auto;
+		height: auto;
+		flex-shrink: 0
+	}
+
+	#textContainer {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: flex-end;
+		max-width: 215px;
+		word-wrap: break-word;
+		margin-left: 10px
+	}
+
+	#bookTitle {
+		font-size: 14px;
+		font-weight: 700;
+		text-align: right;
+		margin-bottom: 5px
+	}
+
+	#bookAuthor {
+		font-size: 12px;
+		text-align: right
+	}
+
+	#bookDescription {
+		width: 100%;
+		text-align: justify;
+		margin-top: 10px;
+		font-size: 11px;
+		overflow: hidden
+	}
+
+	#ISBNCodes {
+		display: flex;
+		justify-content: space-between;
+		margin-top: 10px
+	}
+
+	#ISBN13Container,
+	#ISBN10Container {
+		flex-basis: 50%;
+		text-align: center;
+		display: flex;
+		flex-direction: column;
+		align-items: center
+	}
+
+	#ISBN13Block,
+	#ISBN10Block {
+		width: 100%;
+		max-width: 100%;
+		color: #FFFFFF
+	}
+
+	#ISBN13Links,
+	#ISBN10Links {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		margin-top: 5px
+	}
+
+	#closeButton {
+		position: absolute;
+		top: 5px;
+		right: 5px;
+		cursor: pointer;
+		color: #fff;
+		background-color: #444;
+		border: none;
+		border-radius: 3px;
+		padding: 5px
+	}
+
+	#scaleControls {
+		position: fixed;
+		top: 10px;
+		left: 10px;
+		padding: 10px;
+		background-color: rgba(50, 50, 50, 0.8);
+		color: #FFFFFF;
+		border-radius: 5px;
+		z-index: 1000;
+		display: flex;
+		flex-direction: row;
+		align-items: center
+	}
+
+	#scaleSlider {
+		margin: 0 10px
+	}
+
+	#scaleValue,
+	#currentScale {
+		display: inline-block;
+		width: 40px;
+		margin-left: 10px text-align: center
+	}
+
+	#applyScale {
+		margin-left: 10px
+	}
+
+	#refreshButton {
+		margin-right: 10px
+	}
+
+	#overlay {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background-color: #000000;
+		color: #FFFFFF;
+		font-size: 40px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		text-align: center;
+		z-index: 2000;
+		opacity: 1;
+		transition: opacity 0.5s;
+		pointer-events: auto
+	}
+
+	#overlay.hidden {
+		opacity: 0;
+		pointer-events: none
+	}
+
+	#overlay.active {
+		opacity: 1;
+		pointer-events: auto
+	}
+
+	#filterMenu {
+		position: fixed;
+		left: -240px;
+		top: 0;
+		width: 220px;
+		height: 100%;
+		background-color: rgba(50, 50, 50, 0.9);
+		color: #FFFFFF;
+		transition: left 0.3s;
+		z-index: 1001;
+		padding: 10px;
+		box-sizing: border-box;
+		overflow-y: auto;
+		padding-bottom: 55px;
+	}
+
+	#openMenuButton,
+	#closeMenuButton {
+		position: fixed;
+		left: 10px;
+		bottom: 10px;
+		background-color: #444;
+		color: #fff;
+		border: none;
+		border-radius: 3px;
+		padding: 10px;
+		cursor: pointer;
+		z-index: 1002;
+	}
+
+	#closeMenuButton {
+		display: none;
+	}
+
+	#authorFilterContainer,
+	#tagsFilterContainer,
+	#genreFilterContainer,
+	#dateFilterContainer {
+		display: grid;
+		grid-template-rows: repeat(10, auto);
+		grid-auto-flow: column;
+		height: 240px;
+		overflow-x: auto;
+		overflow-y: hidden;
+		font-size: 9px;
+		gap: 2px;
+	}
+
+	.authorCheckboxContainer,
+	.tagsCheckboxContainer,
+	.genreCheckboxContainer,
+	.dateCheckboxContainer {
+		display: contents;
+	}
+
+	.authorCheckboxContainer label,
+	.tagsCheckboxContainer label,
+	.genreCheckboxContainer label,
+	.dateCheckboxContainer label {
+		display: flex;
+		align-items: center;
+		width: 100px;
+		height: 20.5px;
+		box-sizing: border-box;
+		white-space: nowrap;
+	}
+
+	.hidden-book {
+		visibility: hidden;
+	}
+	</style>
+</head>
+
+<body>
+	<div id="backgroundContainer">
+		<div id="lecternContainer">
+			<img id="lecternImage" src="https://lh3.googleusercontent.com/d/1efxMhpVrmDeIvxypAM_X906Kju9gkVi_" alt="Lectern">
+			<div id="currentPlaceholder">?</div>
+			<img id="currentBookCover" src="" alt="Currently Reading" style="display: none;">
+		</div>
+		<div class="bookcase" id="bookcases"></div>
+		<img alt="Shh" id="dontWorryAboutIt" src="https://lh3.googleusercontent.com/d/1sM-A5OxJuvE374KQUPV2Ecfc92L3trO7">
+	</div>
+	<div class="floor"></div>
+	<div id="bookDetailContainer">
+		<button id="closeButton" onclick="closeBookDetail()">×</button>
+		<div id="coverAndText">
+			<img alt="Book Cover" id="bookCover" src="">
+			<div id="textContainer">
+				<div id="bookTitle"></div>
+				<div id="bookAuthor"></div>
+			</div>
+		</div>
+		<div id="bookDescription"></div>
+		<div id="ISBNCodes">
+			<div id="ISBN13Container">
+				<svg id="ISBN13Block"></svg>
+				<div id="ISBN13Links">
+					<a id="goodreadsISBN13" target="_blank" style="display: flex; justify-content: center; align-items: center; width: 20px; height: 20px; margin-right: 5px;">
+						<img src="https://lh3.googleusercontent.com/d/1D5D8-y48sVjldaSNK_yjapHYzSqJs-V1" alt="Goodreads" style="width: 100%; height: 100%;">
+					</a>
+					<a id="thestorygraphISBN13" target="_blank" style="display: flex; justify-content: center; align-items: center; width: 20px; height: 20px;">
+						<img src="https://lh3.googleusercontent.com/d/1LfJgCHzxw0rkcL8RE3_C3gfnINeKowv6" alt="The StoryGraph" style="width: 100%; height: 100%;">
+					</a>
+				</div>
+			</div>
+			<div id="ISBN10Container">
+				<svg id="ISBN10Block"></svg>
+				<div id="ISBN10Links">
+					<a id="goodreadsISBN10" target="_blank" style="display: flex; justify-content: center; align-items: center; width: 20px; height: 20px; margin-right: 5px;">
+						<img src="https://lh3.googleusercontent.com/d/1D5D8-y48sVjldaSNK_yjapHYzSqJs-V1" alt="Goodreads" style="width: 100%; height: 100%;">
+					</a>
+					<a id="thestorygraphISBN10" target="_blank" style="display: flex; justify-content: center; align-items: center; width: 20px; height: 20px;">
+						<img src="https://lh3.googleusercontent.com/d/1LfJgCHzxw0rkcL8RE3_C3gfnINeKowv6" alt="The StoryGraph" style="width: 100%; height: 100%;">
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id="scaleControls">
+		<a id="backButton" href="#" target="_blank" style="color: white; font-size: 18px; text-decoration: none; margin-right: 10px;">↩BOOKSHOP</a>
+		<label for="scaleSlider">| Scale</label>
+		<input type="range" id="scaleSlider" min="2" max="100" value="10">
+		<span id="scaleValue">10</span>
+		<button id="applyScale">Apply</button>
+		<span style="margin: 0 10px;">|</span>
+		<button id="refreshButton">Refresh</button>
+		<div>Current Scale: <span id="currentScale">10</span>
+		</div>
+	</div>
+	<div id="overlay">
+		<div> The shelves are <br>being constructed, <br>please be patient! </div>
+	</div>
+	<div id="filterMenu">
+		<button id="closeMenuButton" onclick="toggleMenu()">Close Menu</button>
+		<div>
+			<button id="clearFiltersButton" onclick="clearFilters()">Clear Filter Selection</button>
+			<h4>Combined <select id="overallLogicDropdown">
+					<option value="AND">AND</option>
+					<option value="OR">OR</option>
+					<option value="NOR">NOR</option>
+					<option value="NAND">NAND</option>
+					<option value="XOR">XOR</option>
+				</select></h4>
+			<hr>
+			<h3>Author <select id="authorLogicDropdown">
+					<option value="OR">OR</option>
+					<option value="AND">AND</option>
+					<option value="NOR">NOR</option>
+					<option value="NAND">NAND</option>
+					<option value="XOR">XOR</option>
+				</select></h3>
+			<div id="authorFilterContainer">
+				<!-- Filter options will be dynamically generated here -->
+			</div>
+			<hr>
+			<h3>Tags <select id="tagLogicDropdown">
+					<option value="OR">OR</option>
+					<option value="AND">AND</option>
+					<option value="NOR">NOR</option>
+					<option value="NAND">NAND</option>
+					<option value="XOR">XOR</option>
+				</select></h3>
+			<div id="tagsFilterContainer">
+				<!-- Filter options will be dynamically generated here -->
+			</div>
+			<hr>
+			<h3>Genre <select id="genreLogicDropdown">
+					<option value="OR">OR</option>
+					<option value="AND">AND</option>
+					<option value="NOR">NOR</option>
+					<option value="NAND">NAND</option>
+					<option value="XOR">XOR</option>
+				</select></h3>
+			<div style="font-size: 10px;"> Search other genres? <br>
+				<label><input type="radio" name="includeOtherGenres" value="no" checked> No</label> <label><input type="radio" name="includeOtherGenres" value="yes"> Yes</label>
+			</div>
+			<div id="genreFilterContainer">
+				<!-- Filter options will be dynamically generated here -->
+			</div>
+			<div style="font-size: 7px;"> <i>*Only seen as "other genre"</i> <br>
+			</div>
+			<hr>
+			<h3>Date <select id="dateLogicDropdown">
+					<option value="OR">OR</option>
+					<option value="AND">AND</option>
+					<option value="NOR">NOR</option>
+					<option value="NAND">NAND</option>
+					<option value="XOR">XOR</option>
+				</select></h3>
+			<div style="font-size: 10px;"><label><input type="radio" name="dateType" value="opd" checked> Original</label> <label><input type="radio" name="dateType" value="epd"> Edition</label>
+			</div>
+			<div id="dateFilterContainer">
+				<!-- Filter options will be dynamically generated here -->
+			</div>
+		</div>
+	</div>
+	<button id="openMenuButton" onclick="toggleMenu()">Open Menu</button>
+	<script>
+	var scaleFactor = 10;
+	var initialLoad = true;
+	var dontWorryAboutItSet = false;
+	var currentData;
+	document.addEventListener('DOMContentLoaded', () => {
+		document.getElementById('scaleSlider').addEventListener('input', updateScaleDisplay);
+		document.getElementById('applyScale').addEventListener('click', applyScale);
+		document.getElementById('refreshButton').addEventListener('click', refreshData);
+		init();
+		google.script.run.withSuccessHandler(data => {
+			loadFilterOptions('author', data.authors);
+			loadFilterOptions('tags', data.tags);
+			loadFilterOptions('genre', data.genres);
+			loadFilterOptions('date', data.dates);
+		}).getMenuData();
+	});
+
+	function init() {
+		showOverlay();
+		loadData().then(data => {
+			handleInitialDataLoad(data);
+			hideOverlay();
+		}).catch(error => console.error('Error during loadData:', error));
+		setupEventListeners();
+	}
+
+	function setupEventListeners() {
+		document.getElementById('scaleSlider').addEventListener('input', updateScaleDisplay);
+		document.getElementById('applyScale').addEventListener('click', applyScale);
+		document.getElementById('refreshButton').addEventListener('click', refreshData);
+	}
+
+	function handleInitialDataLoad(data) {
+		if(data && data.defaultScale) {
+			setDefaultScale(data.defaultScale);
+		}
+		currentData = data; // Assign fetched data to currentData
+		displayBookcases(data);
+		if(!dontWorryAboutItSet) {
+			updateDontWorryAboutIt(data.dontWorryAboutIt);
+			dontWorryAboutItSet = true;
+		}
+		updateContainerWidths(data);
+		setupBackButton(data.webAppUrl);
+	}
+
+	function setDefaultScale(scale) {
+		scaleFactor = scale;
+		updateScaleControls(scale);
+		updateLayoutElements();
+	}
+
+	function updateScaleControls(scale) {
+		document.getElementById('scaleSlider').value = scale;
+		document.getElementById('scaleValue').textContent = scale;
+		document.getElementById('currentScale').textContent = scale;
+	}
+
+	function updateScaleDisplay() {
+		document.getElementById('scaleValue').textContent = document.getElementById('scaleSlider').value;
+	}
+
+	function applyScale() {
+		showOverlay();
+		setTimeout(() => {
+			scaleFactor = parseInt(document.getElementById('scaleSlider').value);
+			updateScaleControls(scaleFactor);
+			updateLayoutElements();
+			displayBookcases(currentData);
+			updateContainerWidths(currentData);
+			hideOverlay();
+		}, 600);
+	}
+
+	function refreshData() {
+		showOverlay();
+		setTimeout(() => {
+			loadData().then(newData => {
+				if(isDataChanged(currentData, newData)) {
+					currentData = newData;
+					displayBookcases(newData);
+					updateContainerWidths(newData);
+				}
+				hideOverlay();
+			});
+		}, 600);
+	}
+	// Data handling functions
+	function loadData() {
+		return new Promise((resolve, reject) => {
+			google.script.run.withSuccessHandler(data => {
+				resolve(data);
+			}).withFailureHandler(error => {
+				console.error("Error retrieving data:", error);
+				reject(error);
+			}).getSheetData();
+		});
+	}
+
+	function isDataChanged(oldData, newData) {
+		return JSON.stringify(oldData) !== JSON.stringify(newData);
+	}
+
+	function updateDontWorryAboutIt(data) {
+		const img = document.getElementById('dontWorryAboutIt');
+		img.src = data.url;
+		img.style.right = `-${data.offset}px`;
+		document.body.style.backgroundColor = data.backgroundColor;
+	}
+	// Layout update functions
+	function updateLayoutElements() {
+		updateLecternSize();
+		updateBackgroundPadding();
+		updateBookCoverPosition();
+	}
+
+	function updateLecternSize() {
+		const lectern = document.getElementById('lecternContainer');
+		const img = document.getElementById('lecternImage');
+		const width = 20 * scaleFactor;
+		const height = 30 * scaleFactor;
+		lectern.style.width = `${width}px`;
+		lectern.style.height = `${height}px`;
+		img.style.width = `${width}px`;
+		img.style.height = `${height}px`;
+	}
+
+	function updateBackgroundPadding() {
+		document.getElementById('backgroundContainer').style.paddingLeft = `${20 * scaleFactor + 10}px`;
+	}
+
+	function updateBookCoverPosition() {
+		const cover = document.getElementById('currentBookCover');
+		const placeholder = document.getElementById('currentPlaceholder');
+		const offset = (20 * scaleFactor) + 1;
+		cover.style.bottom = `${offset}px`;
+		placeholder.style.bottom = `${offset}px`;
+	}
+	// Container update functions
+	function updateContainerWidths(data) {
+		const minContentWidth = calculateMinContentWidth(data);
+		const backgroundContainer = document.getElementById('backgroundContainer');
+		const floor = document.querySelector('.floor');
+		const extraWidth = 220 - ((10 - scaleFactor) * 20);
+		const totalWidth = Math.max(minContentWidth, window.innerWidth);
+		const floorWidth = totalWidth + extraWidth;
+		backgroundContainer.style.minWidth = `${totalWidth}px`;
+		floor.style.minWidth = `${floorWidth}px`;
+	}
+
+	function calculateMinContentWidth(data) {
+		let minWidth = 20 * scaleFactor + 10;
+		data.cases.forEach(caseInfo => {
+			const width = parseFloat(caseInfo[1]) * scaleFactor;
+			const columns = parseInt(caseInfo[3]);
+			minWidth += width * columns + 12 * 2 + 10;
+			if(columns > 1) {
+				minWidth += 12 * (columns - 1);
+			}
+		});
+		minWidth += 100;
+		return minWidth;
+	}
+	// Bookcase display functions
+	function displayBookcases(data) {
+		const bookcasesElem = document.getElementById('bookcases');
+		if(!data || !data.shelves || !data.cases || !bookcasesElem) {
+			console.error('Data or bookcases element is missing or incomplete:', data);
+			return;
+		}
+		bookcasesElem.innerHTML = '';
+		const bookcaseMap = createBookcaseMap(data.shelves);
+		const highestBookcaseNum = Math.max(...data.shelves.map(book => parseInt(book[0])));
+		const highestShelfNum = Math.max(...data.shelves.filter(book => parseInt(book[0]) === highestBookcaseNum).map(book => parseInt(book[1])));
+		data.cases.forEach(caseInfo => {
+			createBookcaseElement(bookcaseMap, caseInfo, bookcasesElem, data.currentlyReadId, highestBookcaseNum, highestShelfNum);
+		});
+		updateCurrentlyReadBook(data.currentlyReadId, data);
+	}
+
+	function createBookcaseMap(shelves) {
+		const bookcaseMap = new Map();
+		shelves.forEach(book => {
+			const caseNum = book[0];
+			if(!bookcaseMap.has(caseNum)) {
+				bookcaseMap.set(caseNum, []);
+			}
+			bookcaseMap.get(caseNum).push(createBookData(book));
+		});
+		return bookcaseMap;
+	}
+
+	function createBookData(book) {
+		return {
+			shelfNum: book[1],
+			title: book[2],
+			author: book[3],
+			thickness: parseFloat(book[4]) * scaleFactor,
+			height: Math.min(parseFloat(book[5]) * scaleFactor, 12 * scaleFactor),
+			width: parseFloat(book[6]) * scaleFactor,
+			htmlStyle: book[7],
+			coverImage: book[8],
+			description: book[9],
+			isbn13: book[10],
+			isbn: book[11],
+			bookId: book[12],
+			authorLastName: book[13],
+			textColor: book[14],
+			orientation: book[15],
+			displaySpace: parseFloat(book[16]) * scaleFactor || 0.25 * scaleFactor,
+			isFavorite: book[17] === 1,
+			tags: book[18],
+			genres: book[19],
+			otherGenres: book[20],
+			opd: book[21],
+			epd: book[22]
+		};
+	}
+
+	function createShelfMap(bookcaseMap) {
+		const shelfMap = new Map();
+		bookcaseMap.forEach((_, caseNum) => {
+			shelfMap.set(caseNum, new Set());
+		});
+		return shelfMap;
+	}
+
+	function createBookcaseElement(bookcaseMap, caseInfo, parentElem, currentlyReadId, highestBookcaseNum, highestShelfNum) {
+		const caseNum = parseInt(caseInfo[0]);
+		const width = parseFloat(caseInfo[1]) * scaleFactor;
+		const numShelves = parseInt(caseInfo[2]);
+		const columns = parseInt(caseInfo[3]);
+		const books = bookcaseMap.get(caseNum) || [];
+		const bookcaseElem = document.createElement('div');
+		bookcaseElem.className = 'bookcase';
+		bookcaseElem.style.flexDirection = 'row';
+		const shelvesPerColumn = Math.ceil(numShelves / columns);
+		for(let col = 0; col < columns; col++) {
+			const columnElem = createColumnElement();
+			for(let i = 0; i < shelvesPerColumn; i++) {
+				const shelfIndex = col + i * columns + 1;
+				if(shelfIndex <= numShelves) {
+					const shelfElem = createShelfElement(width);
+					const isLastShelfWithBooks = (caseNum === highestBookcaseNum && shelfIndex === highestShelfNum);
+					addBooksToShelf(shelfElem, books.filter(b => parseInt(b.shelfNum) === shelfIndex), width, currentlyReadId, isLastShelfWithBooks);
+					columnElem.appendChild(shelfElem);
+				}
+			}
+			if(col < columns - 1) {
+				columnElem.style.marginRight = '6px';
+				columnElem.style.borderRight = '6px solid transparent';
+			}
+			bookcaseElem.appendChild(columnElem);
+		}
+		parentElem.appendChild(bookcaseElem);
+	}
+
+	function createColumnElement() {
+		const columnElem = document.createElement('div');
+		columnElem.className = 'columnElem';
+		columnElem.style.flex = '1';
+		return columnElem;
+	}
+
+	function createShelfElement(width) {
+		const shelfElem = document.createElement('div');
+		shelfElem.className = 'shelf';
+		shelfElem.style.width = `${width}px`;
+		shelfElem.style.minHeight = `${12 * scaleFactor}px`;
+		return shelfElem;
+	}
+
+	function addBooksToShelf(shelfElem, shelfBooks, width, currentlyReadId, isLastShelfWithBooks) {
+		const totalThickness = shelfBooks.reduce((sum, book) => sum + (book.orientation === 'Displayed' ? book.width + book.displaySpace * 2 : book.thickness), 0);
+		const remainingSpace = width - totalThickness;
+		const spacing = (shelfBooks.length > 1 && !isLastShelfWithBooks) ? remainingSpace / (shelfBooks.length - 1) : 0;
+		shelfBooks.forEach(book => {
+			if(book.orientation === 'Displayed') {
+				shelfElem.appendChild(createDisplayedBookElement(book, spacing));
+			} else {
+				shelfElem.appendChild(createBookElement(book, spacing, currentlyReadId));
+			}
+		});
+	}
+
+	function createDisplayedBookElement(book, spacing) {
+		const bookDisplayElem = document.createElement('div');
+		bookDisplayElem.className = 'bookDisplay';
+		bookDisplayElem.style.cssText = `width: ${book.width + book.displaySpace * 2}px; height: ${book.height}px; margin-right: ${spacing}px;`;
+		const displayedBookElem = document.createElement('div');
+		displayedBookElem.className = 'displayedBook';
+		displayedBookElem.style.cssText = `width: ${book.width}px; height: ${book.height}px; background-image: url('${book.coverImage}'); background-color: ${book.htmlStyle}; background-size: cover; box-sizing: border-box;`;
+		displayedBookElem.onclick = () => showBookDetails(book.title, book.author, book.coverImage, book.description, book.isbn13, book.isbn);
+		bookDisplayElem.appendChild(displayedBookElem);
+		if(book.isFavorite) {
+			bookDisplayElem.appendChild(createStarElement(book.width, book.height));
+		}
+		return bookDisplayElem;
+	}
+
+	function createBookElement(book, spacing, currentlyReadId) {
+		const bookElem = document.createElement('div');
+		bookElem.className = 'book';
+		bookElem.dataset.cover = book.coverImage;
+		bookElem.dataset.authors = book.author.toLowerCase();
+		bookElem.dataset.tags = book.tags.map(tag => tag.toLowerCase().trim()).join(', ');
+		bookElem.dataset.genres = book.genres.toLowerCase();
+		bookElem.dataset.otherGenres = book.otherGenres.map(genre => genre.toLowerCase().trim()).join(', ');
+		bookElem.dataset.opd = book.opd.join(', ').toLowerCase();
+		bookElem.dataset.epd = book.epd.join(', ').toLowerCase();
+		bookElem.style.cssText = `width: ${book.thickness}px; height: ${book.height}px; background-color: ${book.htmlStyle}; color: ${book.textColor}; box-sizing: border-box; margin-right: ${spacing}px;`;
+		bookElem.textContent = book.authorLastName;
+		adjustFontSize(bookElem, book.thickness, book.height);
+		bookElem.style.border = book.bookId === currentlyReadId ? '1px solid white' : '1px solid black';
+		bookElem.style.display = 'flex';
+		bookElem.style.justifyContent = 'center';
+		bookElem.style.alignItems = 'center';
+		bookElem.onclick = () => showBookDetails(book.title, book.author, book.coverImage, book.description, book.isbn13, book.isbn);
+		if(book.isFavorite) {
+			bookElem.appendChild(createStarElement(book.thickness, book.height));
+		}
+		return bookElem;
+	}
+
+	function createStarElement(bookWidth, bookHeight) {
+		const starSize = Math.min(scaleFactor, bookWidth - 2);
+		const starElem = document.createElement('img');
+		starElem.src = 'https://lh3.googleusercontent.com/d/1qwYo-4wkNGcR9OEnApKGphnw5dIwRNq_';
+		starElem.style.position = 'absolute';
+		starElem.style.width = `${starSize}px`;
+		starElem.style.height = `${(starSize * 95) / 100}px`;
+		starElem.style.bottom = `${2}px`;
+		starElem.style.left = '50%';
+		starElem.style.transform = 'translateX(-50%)';
+		return starElem;
+	}
+
+	function adjustFontSize(element, bookThickness, bookHeight) {
+		const nameLength = element.textContent.length;
+		let firstFS = scaleFactor;
+		let secFS = Math.min(Math.round(bookThickness * 0.9), firstFS);
+		let textWidth = (secFS / 3) * 2 * nameLength;
+		let thirdFS = secFS * Math.min(1, (bookHeight / textWidth) * 0.9);
+		let finalFontSize = Math.max(0, thirdFS * 0.75);
+		if(finalFontSize < 5) {
+			element.textContent = '';
+		} else {
+			element.style.fontSize = `${finalFontSize}px`;
+			element.style.writingMode = 'vertical-rl';
+			element.style.textOrientation = 'mixed';
+		}
+	}
+
+	function updateCurrentlyReadBook(currentlyReadId, data) {
+		const bookCoverElem = document.getElementById('currentBookCover');
+		const placeholderElem = document.getElementById('currentPlaceholder');
+		const bookData = data.shelves.find(book => book[12] === currentlyReadId);
+		if(bookData) {
+			const coverImage = bookData[8];
+			bookCoverElem.src = coverImage;
+			bookCoverElem.style.display = 'block';
+			bookCoverElem.style.height = `${Math.round(parseFloat(bookData[5]) * scaleFactor)}px`;
+			bookCoverElem.style.borderColor = bookData[7];
+			bookCoverElem.onclick = () => showBookDetails(bookData[2], bookData[3], coverImage, bookData[9], bookData[10], bookData[11]);
+			placeholderElem.style.display = 'none';
+		} else {
+			bookCoverElem.style.display = 'none';
+			const height = 9 * scaleFactor;
+			const width = 5 * scaleFactor;
+			const fontSize = 4 * scaleFactor;
+			placeholderElem.style.display = 'flex';
+			placeholderElem.style.height = `${height}px`;
+			placeholderElem.style.width = `${width}px`;
+			placeholderElem.style.fontSize = `${fontSize}pt`;
+		}
+	}
+	// Book detail functions
+	function showBookDetails(title, author, coverImage, description, isbn13, isbn10) {
+		const detailContainer = document.getElementById('bookDetailContainer');
+		document.getElementById('bookCover').src = coverImage;
+		document.getElementById('bookTitle').textContent = title;
+		document.getElementById('bookAuthor').textContent = 'by ' + author;
+		document.getElementById('bookDescription').textContent = description;
+		isbn13 = typeof isbn13 === 'string' ? isbn13.trim() : "0000000000000";
+		isbn10 = typeof isbn10 === 'string' ? isbn10.trim() : "0000000000";
+		document.getElementById('ISBN13Block').textContent = "ISBN13: " + isbn13;
+		document.getElementById('ISBN10Block').textContent = "ISBN10: " + isbn10;
+		updateISBNLinks(isbn13, isbn10);
+		detailContainer.style.display = 'block';
+		updateBarcodes(isbn13, isbn10);
+	}
+
+	function updateISBNLinks(isbn13, isbn10) {
+		const goodreadsISBN13 = document.getElementById('goodreadsISBN13');
+		const thestorygraphISBN13 = document.getElementById('thestorygraphISBN13');
+		const goodreadsISBN10 = document.getElementById('goodreadsISBN10');
+		const thestorygraphISBN10 = document.getElementById('thestorygraphISBN10');
+		if(isbn13 && isbn13 !== "0000000000000") {
+			document.getElementById('ISBN13Links').style.display = 'flex';
+			goodreadsISBN13.href = 'https://goodreads.com/search?q=' + isbn13 + '&ref=nav_sb_ss_l_13';
+			thestorygraphISBN13.href = 'https://app.thestorygraph.com/browse?search_term=' + isbn13;
+		} else {
+			document.getElementById('ISBN13Block').textContent = "ISBN13: Not Available";
+			document.getElementById('ISBN13Links').style.display = 'none';
+		}
+		if(isbn10 && isbn10 !== "0000000000") {
+			document.getElementById('ISBN10Links').style.display = 'flex';
+			goodreadsISBN10.href = 'https://goodreads.com/search?q=' + isbn10 + '&ref=nav_sb_ss_l_13';
+			thestorygraphISBN10.href = 'https://app.thestorygraph.com/browse?search_term=' + isbn10;
+		} else {
+			document.getElementById('ISBN10Block').textContent = "ISBN10: Not Available";
+			document.getElementById('ISBN10Links').style.display = 'none';
+		}
+	}
+
+	function updateBarcodes(isbn13, isbn10) {
+		if(isbn13 && isbn13 !== "0000000000000") {
+			JsBarcode("#ISBN13Block", isbn13, {
+				format: "EAN13",
+				lineColor: "#ffffff",
+				width: 2,
+				height: 30,
+				displayValue: true,
+				background: "rgba(0, 0, 0, 0)"
+			});
+		} else {
+			document.getElementById('ISBN13Block').textContent = "ISBN13: Not Available";
+		}
+		if(isbn10 && isbn10 !== "0000000000") {
+			JsBarcode("#ISBN10Block", isbn10, {
+				format: "CODE39",
+				lineColor: "#ffffff",
+				width: 2,
+				height: 30,
+				displayValue: true,
+				background: "rgba(0, 0, 0, 0)"
+			});
+		} else {
+			document.getElementById('ISBN10Block').textContent = "ISBN10: Not Available";
+		}
+	}
+
+	function closeBookDetail() {
+		document.getElementById('bookDetailContainer').style.display = 'none';
+	}
+	// Overlay functions
+	function showOverlay() {
+		const overlay = document.getElementById('overlay');
+		overlay.classList.remove('hidden');
+	}
+
+	function hideOverlay() {
+		const overlay = document.getElementById('overlay');
+		setTimeout(() => {
+			overlay.classList.add('hidden');
+		}, 500);
+	}
+
+	function setupBackButton(webAppUrl) {
+		const backButton = document.getElementById('backButton');
+		backButton.href = webAppUrl + '?page=bookshop';
+		backButton.style.display = 'inline';
+	}
+	// Filter Menu
+	function toggleMenu() {
+		const menu = document.getElementById('filterMenu');
+		const openButton = document.getElementById('openMenuButton');
+		const closeButton = document.getElementById('closeMenuButton');
+		if(menu.style.left === '0px') {
+			menu.style.left = '-220px';
+			openButton.style.display = 'block';
+			closeButton.style.display = 'none';
+		} else {
+			menu.style.left = '0px';
+			openButton.style.display = 'none';
+			closeButton.style.display = 'block';
+		}
+	}
+
+	function clearFilters() {
+		const checkboxes = document.querySelectorAll('#authorFilterContainer input[type="checkbox"], #tagsFilterContainer input[type="checkbox"], #genreFilterContainer input[type="checkbox"], #dateFilterContainer input[type="checkbox"]');
+		checkboxes.forEach(checkbox => checkbox.checked = false);
+		document.getElementById('authorLogicDropdown').value = 'OR';
+		document.getElementById('tagLogicDropdown').value = 'OR';
+		document.getElementById('genreLogicDropdown').value = 'OR';
+		document.getElementById('dateLogicDropdown').value = 'OR';
+		document.getElementById('overallLogicDropdown').value = 'AND';
+		document.querySelector('input[name="includeOtherGenres"][value="no"]').checked = true;
+		document.querySelector('input[name="dateType"][value="opd"]').checked = true;
+		applyFilters();
+	}
+
+	function applyFilters() {
+		const filters = {
+			authors: getSelectedAuthors(),
+			tags: getSelectedTags(),
+			genres: getSelectedGenres(),
+			dates: getSelectedDates()
+		};
+		const activeFilters = Object.keys(filters).filter(key => filters[key].length > 0);
+		const authorLogic = document.getElementById('authorLogicDropdown').value;
+		const tagLogic = document.getElementById('tagLogicDropdown').value;
+		const genreLogic = document.getElementById('genreLogicDropdown').value;
+		const dateLogic = document.getElementById('dateLogicDropdown').value;
+		const overallLogic = document.getElementById('overallLogicDropdown').value;
+		const includeOtherGenres = document.querySelector('input[name="includeOtherGenres"]:checked').value === 'yes';
+		const dateType = document.querySelector('input[name="dateType"]:checked').value;
+		const books = document.querySelectorAll('.book, .displayedBook');
+		books.forEach(book => {
+			let matchesAuthorFilter = evaluateLogic(filters.authors, book.dataset.authors.split(' and '), authorLogic);
+			let matchesTagFilter = evaluateLogic(filters.tags, book.dataset.tags.split(',').map(tag => tag.trim().toLowerCase()), tagLogic);
+			let genres = includeOtherGenres ? book.dataset.genres.split(',').map(genre => genre.trim().toLowerCase()).concat(book.dataset.otherGenres.split(',').map(genre => genre.trim().toLowerCase())) : book.dataset.genres.split(',').map(genre => genre.trim().toLowerCase());
+			let matchesGenreFilter = evaluateLogic(filters.genres, genres, genreLogic);
+			let dates = book.dataset[dateType].split(',').map(date => date.trim().toLowerCase());
+			let matchesDateFilter = evaluateLogic(filters.dates.map(date => date.trim().toLowerCase()), dates, dateLogic);
+			let filterResults = {
+				authors: matchesAuthorFilter,
+				tags: matchesTagFilter,
+				genres: matchesGenreFilter,
+				dates: matchesDateFilter
+			};
+			let isVisible = activeFilters.length === 0 || evaluateCombinedLogic(activeFilters.map(filter => filterResults[filter]), overallLogic);
+			book.classList.toggle('hidden-book', !isVisible);
+			if(book.classList.contains('book')) {
+				adjustFontSize(book, parseFloat(book.style.width), parseFloat(book.style.height));
+			}
+		});
+	}
+
+	function evaluateLogic(filters, items, logic) {
+		switch (logic) {
+			case 'AND':
+				return filters.every(filter => items.includes(filter));
+			case 'OR':
+				return filters.some(filter => items.includes(filter));
+			case 'NOR':
+				return !filters.some(filter => items.includes(filter));
+			case 'NAND':
+				return !filters.every(filter => items.includes(filter));
+			case 'XOR':
+				return filters.filter(filter => items.includes(filter)).length === 1;
+			default:
+				return true;
+		}
+	}
+
+	function evaluateCombinedLogic(results, logic) {
+		switch (logic) {
+			case 'AND':
+				return results.every(result => result);
+			case 'OR':
+				return results.some(result => result);
+			case 'NOR':
+				return !results.some(result => result);
+			case 'NAND':
+				return !results.every(result => result);
+			case 'XOR':
+				return results.filter(result => result).length === 1;
+			default:
+				return true;
+		}
+	}
+
+	function loadFilterOptions(filterType, filterData) {
+		if(!Array.isArray(filterData)) {
+			console.error('filterData is not an array:', filterData);
+			return;
+		}
+		const container = document.getElementById(`${filterType}FilterContainer`);
+		container.innerHTML = '';
+		const checkboxContainer = document.createElement('div');
+		checkboxContainer.className = `${filterType}CheckboxContainer`;
+		if(filterType === 'date') {
+			let bceDates = filterData.filter(date => date.includes('BCE'));
+			let nonBceDates = filterData.filter(date => !date.includes('BCE'));
+			const transform = (date) => {
+				if(date.includes('Century')) {
+					const centuryNumber = parseInt(date.match(/\d+/)[0]) - 1;
+					return date.includes('BCE') ? `${String(centuryNumber).padStart(2, '0')}00a ${date.split(' ')[1]} BCE` : `${String(centuryNumber).padStart(2, '0')}00a ${date.split(' ')[1]}`;
+				} else {
+					const year = parseInt(date.match(/\d+/)[0]);
+					return date.includes('BCE') ? `${String(year).padStart(4, '0')}s BCE` : `${String(year).padStart(4, '0')}s`;
+				}
+			};
+			bceDates.sort((a, b) => {
+				const transformedA = transform(a);
+				const transformedB = transform(b);
+				return transformedB.localeCompare(transformedA); // Reverse sort for BCE dates
+			});
+			nonBceDates.sort((a, b) => {
+				const transformedA = transform(a);
+				const transformedB = transform(b);
+				return transformedA.localeCompare(transformedB);
+			});
+			const revert = (transformedDate) => {
+				if(transformedDate.includes('a ')) {
+					const parts = transformedDate.split('a ');
+					const centuryNumber = parseInt(parts[0]);
+					const originalCentury = centuryNumber + 1;
+					return `${originalCentury}${getCenturySuffix(originalCentury)} Century${transformedDate.includes('BCE') ? ' BCE' : ''}`;
+				} else {
+					return transformedDate.replace(/^0+/, '');
+				}
+			};
+			bceDates = bceDates.map(revert);
+			nonBceDates = nonBceDates.map(revert);
+			filterData = [...bceDates, ...nonBceDates];
+		} else {
+			filterData.sort((a, b) => a.localeCompare(b));
+		}
+		filterData.forEach(item => {
+			const label = document.createElement('label');
+			const checkbox = document.createElement('input');
+			checkbox.type = 'checkbox';
+			checkbox.dataset.originalValue = item.toLowerCase();
+			checkbox.value = item.toLowerCase().replace('*', '');
+			checkbox.style.marginRight = '5px';
+			checkbox.addEventListener('change', applyFilters);
+			label.appendChild(checkbox);
+			const textNode = document.createTextNode(item);
+			if(item.endsWith('*')) {
+				label.style.fontStyle = 'italic';
+			}
+			label.appendChild(textNode);
+			checkboxContainer.appendChild(label);
+		});
+		container.appendChild(checkboxContainer);
+	}
+
+	function getCenturySuffix(century) {
+		const suffixes = ["th", "st", "nd", "rd"];
+		const v = century % 100;
+		return (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
+	}
+
+	function getSelectedAuthors() {
+		return Array.from(document.querySelectorAll('#authorFilterContainer input[type="checkbox"]:checked')).map(checkbox => checkbox.value.toLowerCase().trim());
+	}
+
+	function getSelectedTags() {
+		return Array.from(document.querySelectorAll('#tagsFilterContainer input[type="checkbox"]:checked')).map(checkbox => checkbox.value.toLowerCase().trim());
+	}
+
+	function getSelectedGenres() {
+		return Array.from(document.querySelectorAll('#genreFilterContainer input[type="checkbox"]:checked')).map(checkbox => checkbox.value.toLowerCase().trim());
+	}
+
+	function getSelectedDates() {
+		return Array.from(document.querySelectorAll('#dateFilterContainer input[type="checkbox"]:checked')).map(checkbox => checkbox.value.toLowerCase().trim());
+	}
+	</script>
+</body>
+
+</html>

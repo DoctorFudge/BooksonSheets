@@ -1,4 +1,4 @@
-This is a gargantuan heap of spaghetti code that I was slapping together mostly as an excuse to learn javascript and HTML. It is a giant mess and I should probably start from scratch, but it works for me and I'm pretty much finished with it. So I have decided to release it.
+This is a heap of spaghetti code that I was slapping together mostly as an excuse to learn javascript and HTML. It is a giant mess and I should probably start from scratch, but it works for me and I'm pretty much finished with it. So I have decided to release it.
 
 You should just make a copy of this Google Sheet document. If you wish to start from scratch anyway, take careful note of all of the functions in many of the cells, and be aware that these scripts and such won't work very well without them:
 https://docs.google.com/spreadsheets/d/1SPULMJzmife2lxO31tApfMxH6o68rXz5e2Wui0AiLdI/edit?gid=631931142#gid=631931142

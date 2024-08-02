@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<base target="_top">
+</head>
+
+<body>
+	<form id="wantForm">
+		<button type="button" onclick="goBack()">Back</button>
+		<p>Please fill in the following details:</p>
+		<label for="Title">Title:</label><br>
+		<input type="text" id="Title" name="Title" required><br>
+		<label for="Author">Author:</label><br>
+		<input type="text" id="Author" name="Author"><br>
+		<label for="Author l-f">Author l-f:</label><br>
+		<input type="text" id="Author l-f" name="Author l-f"><br>
+		<label for="Series">Series:</label><br>
+		<input type="text" id="Series" name="Series"><br>
+		<label for="No. in Series">No. in Series:</label><br>
+		<input type="text" id="No. in Series" name="No. in Series"><br>
+		<label for="Genre">Genre:</label><br>
+		<input type="text" id="Genre" name="Genre"><br>
+		<label for="Description">Short Description:</label><br>
+		<textarea id="Description" name="Description" rows="4" cols="50"></textarea><br>
+		<label for="Original Publication Date">Original Publication Date:</label><br>
+		<input type="text" id="Original Publication Date" name="Original Publication Date"><br>
+		<label for="Nonfiction">Is the book nonfiction?</label><br>
+		<select id="Nonfiction" name="Nonfiction">
+			<option value="0">No</option>
+			<option value="1">Yes</option>
+		</select><br>
+		<label for="Favorite">Is the book a favorite of yours?</label><br>
+		<select id="Favorite" name="Favorite">
+			<option value="0">No</option>
+			<option value="1">Yes</option>
+		</select><br>
+		<label for="Comic">Is the book a comic?</label><br>
+		<select id="Comic" name="Comic">
+			<option value="0">No</option>
+			<option value="1">Yes</option>
+		</select><br>
+		<button type="button" onclick="processForm(false)">Submit</button>
+		<button type="button" onclick="processForm(true)">Submit and Add Another</button>
+	</form>
+	<script>
+	function processForm(resetAfterSubmit) {
+		var form = document.getElementById('wantForm');
+		if(!form.checkValidity()) {
+			alert('Please fill in the Title field.');
+			return;
+		}
+		var formData = new FormData(form);
+		var formObject = {};
+		for(var pair of formData.entries()) {
+			formObject[pair[0]] = pair[1];
+		}
+		console.log('Form Object:', formObject);
+		google.script.run.withSuccessHandler(function() {
+			if(resetAfterSubmit) {
+				form.reset();
+			} else {
+				google.script.host.close();
+			}
+		}).processWantForm(formObject);
+	}
+
+	function goBack() {
+		google.script.run.withSuccessHandler(function() {
+			google.script.host.close();
+		}).showInitialForm();
+	}
+	</script>
+</body>
+
+</html>

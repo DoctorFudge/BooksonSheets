@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<base target="_top">
+</head>
+
+<body>
+	<p>If the relevant information for any input isn't available, leave it blank.</p>
+	<form id="authorsForm">
+		<label for="Author">Author's Printed or Pen Name:</label><br>
+		<input type="text" id="Author" name="Author" required><br>
+		<label for="Real Name">Author's Real or Full Name (If applicable):</label><br>
+		<input type="text" id="Real Name" name="Real Name"><br>
+		<label for="Born">Author's Date of Birth (MM/DD/YYYY or just a year):</label><br>
+		<input type="text" id="Born" name="Born"><br>
+		<label for="Died">Author's Date of Death (MM/DD/YYYY, "Alive", or just a year):</label><br>
+		<input type="text" id="Died" name="Died"><br>
+		<label for="From">Author's Place of Origin:</label><br>
+		<input type="text" id="From" name="From"><br>
+		<button type="button" onclick="processForm(false)">Submit</button> <button type="button" onclick="processForm(true)">Submit and Add Another</button>
+	</form>
+	<script>
+	function processForm(resetAfterSubmit) {
+		var form = document.getElementById('authorsForm');
+		if(!form.checkValidity()) {
+			alert('Please fill in the Author field.');
+			return;
+		}
+		var formData = new FormData(form);
+		var formObject = {};
+		for(var pair of formData.entries()) {
+			formObject[pair[0]] = pair[1];
+		}
+		google.script.run.withSuccessHandler(function() {
+			if(resetAfterSubmit) {
+				form.reset();
+			} else {
+				google.script.host.close();
+			}
+		}).processAuthorsForm(formObject);
+	}
+	</script>
+</body>
+
+</html>

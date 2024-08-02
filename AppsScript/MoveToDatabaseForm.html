@@ -6,6 +6,8 @@
 <body>
   <form id="moveToDatabaseForm">
     <p>Please fill in the following details:</p>
+    <input type="hidden" id="matchedRow" name="matchedRow" value="<?= data.matchedRow ?>">
+    <input type="hidden" id="matchedSheet" name="matchedSheet" value="<?= data.matchedSheet ?>">
     <label for="Title">Title:</label><br>
     <input type="text" id="Title" name="Title" value="<?= data.Title ?>"><br>
     <label for="Author">Author:</label><br>
@@ -40,7 +42,7 @@
       <option value="S" <?= data.Binding == 'S' ? 'selected' : '' ?>>Special</option>
     </select><br>
     <label for="Thickness">Thickness:</label><br>
-    <input type="text" id="Thickness" name="Thickness" value="<?= data.Thickness ?>"><br>
+    <input type="text" id="Thickness" name="Thickness" value="<?= data.Thickness ?>">
     <select id="ThicknessInputUnit" name="ThicknessInputUnit">
       <option value="mm">mm</option>
       <option value="cm">cm</option>
@@ -52,7 +54,7 @@
       <option value="mm">mm</option>
     </select><br>
     <label for="Height">Height:</label><br>
-    <input type="text" id="Height" name="Height" value="<?= data.Height ?>"><br>
+    <input type="text" id="Height" name="Height" value="<?= data.Height ?>">
     <select id="HeightInputUnit" name="HeightInputUnit">
       <option value="in">inches</option>
       <option value="cm">cm</option>
@@ -64,7 +66,7 @@
       <option value="mm">mm</option>
     </select><br>
     <label for="Width">Width:</label><br>
-    <input type="text" id="Width" name="Width" value="<?= data.Width ?>"><br>
+    <input type="text" id="Width" name="Width" value="<?= data.Width ?>">
     <select id="WidthInputUnit" name="WidthInputUnit">
       <option value="in">inches</option>
       <option value="cm">cm</option>
